@@ -1,18 +1,18 @@
-import {GoogleGenAI} from '@google/genai';
-import { GEMINI_API_KEY } from '../config/env.js';
-import { json } from 'express';
+import { GoogleGenAI } from "@google/genai";
+import { GEMINI_API_KEY } from "../config/env.js";
+import { json } from "express";
 
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-const ai = new GoogleGenAI({apiKey: GEMINI_API_KEY});
+export const analyzeSymptoms = async (req, res) => {
+  console.log(GEMINI_API_KEY);
+  const symptom = req.body.symptom;
+  console.log("message received:", req.body);
+  console.log("symptom:", symptom);
+  const userMessage = symptom;
+  console.log("userMessage:", userMessage);
 
- export const analyzeSymptoms = async (req, res) => {
-    const symptom = req.body.symptom;
-    console.log("message received:", req.body);
-    console.log("symptom:", symptom);
-    const userMessage = symptom;
-    console.log("userMessage:", userMessage);
-    
-    let prompt =  `
+  let prompt = `
 You are a helpful medical assistant chatbot.
 
 1) Normally, respond in plain text if it's a regular conversation. output ONLY JSON in the following format
@@ -32,14 +32,15 @@ Do not include any text outside JSON if symptoms are detected and you are confid
 
 User message: "${userMessage}"
 `;
-    const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-lite',
-    contents: prompt
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-lite",
+    contents: prompt,
   });
-    
-    let jsonResponse = response.text.replace(/^\s*```json\s*|\s*```\s*$/g, '').trim();
-    let jsonData = JSON.parse(jsonResponse);
-    console.log({ analysis: jsonData });
-    res.json({ analysis: jsonData });
-   
-}
+
+  let jsonResponse = response.text
+    .replace(/^\s*```json\s*|\s*```\s*$/g, "")
+    .trim();
+  let jsonData = JSON.parse(jsonResponse);
+  console.log({ analysis: jsonData });
+  res.json({ analysis: jsonData });
+};
