@@ -18,7 +18,6 @@ connectDB();
 
 // Health Check
 app.get('/', (req, res) => {
-    console.log("hitting the endpoint")
 
   res.send('MediPal API is running...');
 });
