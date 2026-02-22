@@ -172,6 +172,131 @@ const LandingPageMinimal = () => {
           </div>
         </div>
       </nav>
+      <section className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10 min-h-screen flex flex-col">
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <div className="text-center space-y-4 mb-8">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500/20 border border-blue-400/30 rounded-full">
+              <Brain className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm text-cyan-300 font-medium">
+                AI Health Assistant
+              </span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-black leading-tight">
+              Your Personal Health{" "}
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Companion
+              </span>
+            </h1>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+              Describe your symptoms and get instant AI-powered department
+              suggestions and urgency assessment
+            </p>
+          </div>
+
+          {/* Chat Container */}
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-blue-900/40 to-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-xs sm:max-w-md lg:max-w-lg ${
+                      message.type === "user"
+                        ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-2xl rounded-tr-none"
+                        : "bg-white/10 border border-white/20 text-gray-100 rounded-2xl rounded-tl-none"
+                    } p-4 space-y-2`}
+                  >
+                    <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                      {message.text}
+                    </p>
+                    <p
+                      className={`text-xs ${
+                        message.type === "user"
+                          ? "text-cyan-100"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white/10 border border-white/20 rounded-2xl rounded-tl-none p-4 flex items-center space-x-2">
+                    <Loader className="w-5 h-5 text-cyan-400 animate-spin" />
+                    <span className="text-gray-400 text-sm">Analyzing...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t border-white/10 p-4 bg-gradient-to-t from-slate-900/50 to-transparent">
+              <div className="flex items-end space-x-3">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Describe your symptoms..."
+                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20 transition resize-none"
+                  rows="1"
+                  disabled={isLoading}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !inputValue.trim()}
+                  className="px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Press Enter to send • Shift+Enter for new line
+              </p>
+            </div>
+          </div>
+
+          {/* Example Prompts */}
+          <div className="mt-8">
+            <p className="text-center text-sm text-gray-400 mb-4">
+              Try asking:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                "I have chest pain and difficulty breathing",
+                "I have a severe headache and fever",
+                "I fell and hurt my ankle",
+                "I have bleeding from a cut",
+              ].map((prompt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setInputValue(prompt);
+                  }}
+                  className="px-4 py-3 bg-white/5 border border-white/10 hover:border-cyan-400/30 rounded-lg text-sm text-gray-300 hover:text-cyan-400 transition text-left"
+                >
+                  "{prompt}"
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
