@@ -22,8 +22,8 @@ You are a helpful medical assistant chatbot.
 
 2) If the user shares symptoms and you are confident, output ONLY JSON in the following format:
 {
-  "department": [ "Cardiology","Pulmonology","Neurology","General Medicine","Orthopedics", "Emergency","Ophthalmology","Dermatology","Dentistry" ], #  departement simlar like this 
-  "urgency": "low|medium|high", # must be enum only 3 
+  "department":  "Cardiology" | "Pulmonology" |"Neurology" | "General Medicine" | "Orthopedics" | "Emergency" | "Ophthalmology" | "Dermatology" | "Dentistry", #  departement simlar but it  must be only one that is most relevant to the symptoms
+  "urgency": "low|medium|high", # must be enum only one that is most relevant to the symptoms
   "isEmergency": true | false, # bool value 
   "time": "Today | Immediate | this week " , # How immediate | long time gap for the checkup .Eg : "time" : "Immediate"  means check within 2hrs 
 }
@@ -33,7 +33,7 @@ Do not include any text outside JSON if symptoms are detected and you are confid
 User message: "${userMessage}"
 `;
     const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-2.5-flash-lite',
     contents: prompt
   });
     
