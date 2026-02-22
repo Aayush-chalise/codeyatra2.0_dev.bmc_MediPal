@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import AppointmentModal from "../component/AppointmentModal";
+
 import {
   Menu,
   X,
@@ -15,6 +17,10 @@ import {
 } from "lucide-react";
 
 const LandingPageWithDoctors = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDoctorForBooking, setSelectedDoctorForBooking] =
+    useState(null);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("en");
   const [messages, setMessages] = useState([
@@ -31,7 +37,7 @@ const LandingPageWithDoctors = () => {
   const [error, setError] = useState(null);
 
   // Backend API configuration
-  const BACKEND_URL = "http://localhost:5000"; // Change this to your backend URL
+  const BACKEND_URL = "http://localhost:8080"; // Change this to your backend URL
 
   const translations = {
     en: {
@@ -83,7 +89,7 @@ const LandingPageWithDoctors = () => {
     {
       id: 3,
       name: "Dr. Amit Singh",
-      department: "emergency",
+      department: "Emergency",
       specialization: "Interventional Cardiology",
       rating: 4.7,
       reviews: 189,
@@ -189,6 +195,45 @@ const LandingPageWithDoctors = () => {
     stomach: { dept: "General Medicine", urgency: "Medium", time: "Today" },
   };
 
+  const handleBookAppointment = (doctor) => {
+    setSelectedDoctorForBooking(doctor);
+    setIsModalOpen(true);
+  };
+
+  // Handle form submission
+  const handleAppointmentSubmit = async (appointmentData) => {
+    try {
+      // Send to backend
+      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(appointmentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Appointment booked successfully:", data);
+
+      // Add success message to chat
+      const botMessage = {
+        id: messages.length + 1,
+        type: "bot",
+        text: `✅ Appointment Confirmed!\n\nYour appointment with ${appointmentData.doctorName} has been booked successfully.\n\nConfirmation details have been sent to ${appointmentData.userEmail}.\n\nWe look forward to seeing you!`,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (err) {
+      console.error("Error booking appointment:", err);
+      throw err;
+    }
+  };
+
   const analyzeSymptom = (symptomText) => {
     const lowerText = symptomText.toLowerCase();
 
@@ -261,6 +306,7 @@ const LandingPageWithDoctors = () => {
     try {
       // Send to backend
       const backendResponse = await sendToBackend(symptomText);
+      console.log(backendResponse);
 
       // Use backend response if available, otherwise fall back to local analysis
       let analysis = backendResponse?.analysis || analyzeSymptom(symptomText);
@@ -270,11 +316,11 @@ const LandingPageWithDoctors = () => {
       if (analysis?.text) {
         botResponse = analysis.text;
       } else if (analysis?.isEmergency) {
-        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately.\n\nSuggested Department: **${analysis.dept}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
+        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately.\n\nSuggested Department: **${analysis.department}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
       } else if (analysis) {
-        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.dept}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
+        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.department}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
         // Set the selected department for filtering
-        setSelectedDepartment(analysis.dept);
+        setSelectedDepartment(analysis.department);
       } else {
         botResponse = `I couldn't determine the exact department from your symptoms. Could you provide more details? For example: location of pain, duration, additional symptoms, etc.`;
       }
@@ -612,7 +658,10 @@ const LandingPageWithDoctors = () => {
                       </div>
 
                       {/* Book Button */}
-                      <button className="w-full mt-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/20 transition">
+                      <button
+                        onClick={() => handleBookAppointment(doctor)}
+                        className="w-full mt-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/20 transition"
+                      >
                         Book Appointment
                       </button>
                     </div>
