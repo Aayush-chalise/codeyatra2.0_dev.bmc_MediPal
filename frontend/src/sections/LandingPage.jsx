@@ -64,12 +64,13 @@ const LandingPageWithDoctors = () => {
       rating: 4.8,
       reviews: 245,
       experience: "15 years",
-      fee: "$50",
+      fee: "NPR 1000",
       availability: "Available Today",
       image: "👨‍⚕️",
       phone: "+977-1-4123456",
       address: "Central Hospital, Kathmandu",
       consultationType: ["In-person", "Video Call"],
+      workingHours: "9:00 AM - 5:00 PM",
     },
     {
       id: 2,
@@ -79,7 +80,7 @@ const LandingPageWithDoctors = () => {
       rating: 4.9,
       reviews: 312,
       experience: "12 years",
-      fee: "$55",
+      fee: "NPR 550",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4234567",
@@ -90,11 +91,11 @@ const LandingPageWithDoctors = () => {
       id: 3,
       name: "Dr. Amit Singh",
       department: "Emergency",
-      specialization: "Interventional Cardiology",
+      specialization: "Emergency",
       rating: 4.7,
       reviews: 189,
       experience: "18 years",
-      fee: "$65",
+      fee: "NPR 800",
       availability: "Available Tomorrow",
       image: "👨‍⚕️",
       phone: "+977-1-4345678",
@@ -109,7 +110,7 @@ const LandingPageWithDoctors = () => {
       rating: 4.6,
       reviews: 156,
       experience: "10 years",
-      fee: "$45",
+      fee: "NPR 650",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4456789",
@@ -124,7 +125,7 @@ const LandingPageWithDoctors = () => {
       rating: 4.8,
       reviews: 267,
       experience: "14 years",
-      fee: "$50",
+      fee: "NPR 500",
       availability: "Available Today",
       image: "👨‍⚕️",
       phone: "+977-1-4567890",
@@ -139,7 +140,7 @@ const LandingPageWithDoctors = () => {
       rating: 4.9,
       reviews: 298,
       experience: "16 years",
-      fee: "$60",
+      fee: "NPR 600",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4678901",
@@ -154,7 +155,7 @@ const LandingPageWithDoctors = () => {
       rating: 4.5,
       reviews: 421,
       experience: "20 years",
-      fee: "$35",
+      fee: "NPR 1000",
       availability: "Available Today",
       image: "👨‍⚕️",
       phone: "+977-1-4789012",
@@ -169,7 +170,7 @@ const LandingPageWithDoctors = () => {
       rating: 4.7,
       reviews: 334,
       experience: "13 years",
-      fee: "$40",
+      fee: "NPR 900",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4890123",
@@ -664,6 +665,15 @@ const LandingPageWithDoctors = () => {
                       >
                         Book Appointment
                       </button>
+                      <AppointmentModal
+                        doctor={selectedDoctorForBooking}
+                        isOpen={isModalOpen}
+                        onClose={() => {
+                          setIsModalOpen(false);
+                          setSelectedDoctorForBooking(null);
+                        }}
+                        onSubmit={handleAppointmentSubmit}
+                      />
                     </div>
                   ))}
                 </div>
