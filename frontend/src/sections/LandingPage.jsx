@@ -266,8 +266,11 @@ const LandingPageWithDoctors = () => {
       let analysis = backendResponse?.analysis || analyzeSymptom(symptomText);
 
       let botResponse = "";
-      if (analysis?.isEmergency) {
-        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately** or call 911.\n\nSuggested Department: **${analysis.dept}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
+
+      if (analysis?.text) {
+        botResponse = analysis.text;
+      } else if (analysis?.isEmergency) {
+        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately.\n\nSuggested Department: **${analysis.dept}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
       } else if (analysis) {
         botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.dept}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
         // Set the selected department for filtering
