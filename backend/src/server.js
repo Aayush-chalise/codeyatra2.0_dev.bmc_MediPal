@@ -20,6 +20,10 @@ app.get('/', (req, res) => {
   res.send('MediPal API is running...');
 });
 
+app.get("/chat", (req, res) => {
+
+}
+
 // Routes
 app.use('/', appointmentRoutes);
 
