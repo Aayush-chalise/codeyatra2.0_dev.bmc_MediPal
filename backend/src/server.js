@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 // import cors from 'cors';
 import { connectDB } from './config/db.js';
 import appointmentRoutes from './routes/appointment.route.js';
+import geminiRoutes from './routes/gemini.route.js';
 
 dotenv.config();
 
@@ -17,12 +18,11 @@ connectDB();
 
 // Health Check
 app.get('/', (req, res) => {
+
   res.send('MediPal API is running...');
 });
 
-app.get("/chat", (req, res) => {
-
-}
+app.use("/api", geminiRoutes);
 
 // Routes
 app.use('/', appointmentRoutes);
