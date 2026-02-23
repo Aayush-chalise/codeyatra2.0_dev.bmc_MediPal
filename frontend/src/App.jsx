@@ -11,12 +11,14 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPageWithDoctors />} />
         <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/booking/:appointmentId" element={<BookingStatusPage />} />
+        <Route
+          path="/booking/?userId=696b65446086f9cdf997ecaa"
+          element={<BookingStatusPage />}
+        />
         <Route
           path="/auth"
           element={<AuthModal isOpen={true} onClose={() => {}} />}
         />
-        
       </Routes>
     </Router>
   );

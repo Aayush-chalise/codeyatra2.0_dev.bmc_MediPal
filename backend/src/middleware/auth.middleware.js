@@ -13,7 +13,7 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1]; // get the token after 'Bearer'
       // Verify token
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, "privatekey123");
 
       // Attach user to request
       req.user = await user.findById(decoded.id).select("-password");

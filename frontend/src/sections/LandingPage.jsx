@@ -19,6 +19,7 @@ import AppointmentModal from "../component/AppointmentModal";
 import AuthModal from "../component/AuthModal";
 
 const LandingPageWithDoctors = () => {
+  const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("en");
@@ -149,12 +150,16 @@ const LandingPageWithDoctors = () => {
     }
     return null;
   };
+  const token = localStorage.getItem("token");
 
   const sendToBackend = async (symptomText) => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/symptoms/analyze`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ symptom: symptomText }),
       });
       if (!response.ok) throw new Error(`Backend error: ${response.status}`);
@@ -221,7 +226,7 @@ const LandingPageWithDoctors = () => {
 
   const handleAppointmentSubmit = async (appointmentData) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
+      const response = await fetch(`${BACKEND_URL}/api/appointments/book/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(appointmentData),

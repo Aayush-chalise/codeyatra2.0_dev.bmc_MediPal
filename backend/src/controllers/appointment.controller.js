@@ -1,4 +1,8 @@
 import Appointment from "../models/Appointment.js";
+import { JWT_SECRET } from "../config/env.js";
+import Doctor from "../models/Doctor.js";
+import jwt from "jsonwebtoken";
+
 
 export const createAppointment = async (req, res) => {
   try {
@@ -8,8 +12,7 @@ export const createAppointment = async (req, res) => {
       appointmentDate,
       
     } = req.body;
-    const appointmentTime = Date.now().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
+    const appointmentTime = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
     console.log(req.body);
 
     if (
@@ -22,27 +25,40 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    //  check doctor availability
-    const isAvailable = await IsDoctorAvaliable(
-      doctorId,
-      appointmentDate,
-      appointmentTime,
-    );
-    if (!isAvailable) {
-      return res
-        .status(400)
-        .json({ message: "Doctor is not available for this time slot" });
-    }
+    // //  check doctor availability
+    // const isAvailable = await IsDoctorAvaliable(
+    //   doctorId,
+    //   appointmentDate,
+    //   appointmentTime,
+    // );
+    // if (!isAvailable) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Doctor is not available for this time slot" });
+    // }
    
+    // //  lets prase auth header to get patient id
+    // const authHeader = req.headers.authorization;
+    // if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    //   return res.status(401).json({ message: "Unauthorized" });
+    // } 
 
-    
+    // const token = authHeader.split(" ")[1]
+    // if (!token){
+    //   return res.status(401).json({ message: "Unauthorized" });
+    // }
+    // console.log("Received token:", token);
+
+  
+
     const newAppointment = await Appointment.create({
-      patient: patientId,
+      patient: "696b65446086f9cdf997ecaa",
       doctor: doctorId,
-      appointmentDate,
-      appointmentTime,
-      consultationType,
+      appointmentDate : appointmentDate, 
+      appointmentTime: appointmentTime,
+    
     });
+    console.log("New appointment created:", newAppointment);
     // update the doctor's booked slots
     const doctor = await Doctor.findById(doctorId);
     doctor.bookedSlots.push({

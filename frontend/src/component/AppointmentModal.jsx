@@ -99,7 +99,7 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`, // if your backend requires auth
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // if your backend requires auth
         },
         body: JSON.stringify(appointmentData),
       });
@@ -135,6 +135,8 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
       // Prepare appointment data to send to backend
       const appointmentData = {
         doctorId: doctor._id,
+        
+
         appointmentDate: `${formData.appointmentDate}`,
         appointmentTime: `${formData.appointmentTime}`,
       };

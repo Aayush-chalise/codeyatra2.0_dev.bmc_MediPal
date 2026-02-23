@@ -162,6 +162,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
       });
 
       const data = await res.json();
+      console.log(data);
 
       if (!res.ok) {
         throw new Error(data.message || data.error || "Login failed");
