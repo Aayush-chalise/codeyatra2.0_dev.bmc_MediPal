@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import AppointmentModal from "../component/AppointmentModal";
-
 import {
   Menu,
   X,
@@ -14,13 +12,14 @@ import {
   Phone,
   Video,
   CheckCircle,
+  AlertCircle,
+  FileText,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import AppointmentModal from "../component/AppointmentModal";
 
 const LandingPageWithDoctors = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDoctorForBooking, setSelectedDoctorForBooking] =
-    useState(null);
-
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState("en");
   const [messages, setMessages] = useState([
@@ -31,13 +30,16 @@ const LandingPageWithDoctors = () => {
       timestamp: new Date(),
     },
   ]);
+
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDoctorForBooking, setSelectedDoctorForBooking] =
+    useState(null);
 
-  // Backend API configuration
-  const BACKEND_URL = "http://localhost:8080"; // Change this to your backend URL
+  const BACKEND_URL = "http://localhost:8080";
 
   const translations = {
     en: {
@@ -54,7 +56,7 @@ const LandingPageWithDoctors = () => {
 
   const t = translations[language];
 
-  // Doctor Database
+  // Doctor Database (same as before)
   const doctorsDatabase = [
     {
       id: 1,
@@ -69,6 +71,7 @@ const LandingPageWithDoctors = () => {
       image: "👨‍⚕️",
       phone: "+977-1-4123456",
       address: "Central Hospital, Kathmandu",
+      email: "rajesh@hospital.com",
       consultationType: ["In-person", "Video Call"],
       workingHours: "9:00 AM - 5:00 PM",
     },
@@ -80,27 +83,31 @@ const LandingPageWithDoctors = () => {
       rating: 4.9,
       reviews: 312,
       experience: "12 years",
-      fee: "NPR 550",
+      fee: "NPR 1100",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4234567",
       address: "City Medical Center, Kathmandu",
+      email: "priya@hospital.com",
       consultationType: ["Video Call", "In-person"],
+      workingHours: "10:00 AM - 6:00 PM",
     },
     {
       id: 3,
       name: "Dr. Amit Singh",
       department: "Emergency",
-      specialization: "Emergency",
+      specialization: "Interventional Cardiology",
       rating: 4.7,
       reviews: 189,
       experience: "18 years",
-      fee: "NPR 800",
+      fee: "NPR 1300",
       availability: "Available Tomorrow",
       image: "👨‍⚕️",
       phone: "+977-1-4345678",
       address: "Health Plus Hospital, Kathmandu",
+      email: "amit@hospital.com",
       consultationType: ["In-person"],
+      workingHours: "8:00 AM - 8:00 PM",
     },
     {
       id: 4,
@@ -110,12 +117,14 @@ const LandingPageWithDoctors = () => {
       rating: 4.6,
       reviews: 156,
       experience: "10 years",
-      fee: "NPR 650",
+      fee: "NPR 900",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4456789",
       address: "Respiratory Center, Kathmandu",
+      email: "neha@hospital.com",
       consultationType: ["Video Call", "In-person"],
+      workingHours: "9:00 AM - 5:00 PM",
     },
     {
       id: 5,
@@ -125,12 +134,14 @@ const LandingPageWithDoctors = () => {
       rating: 4.8,
       reviews: 267,
       experience: "14 years",
-      fee: "NPR 500",
+      fee: "NPR 1000",
       availability: "Available Today",
       image: "👨‍⚕️",
       phone: "+977-1-4567890",
       address: "Neuro Care Clinic, Kathmandu",
+      email: "vikram@hospital.com",
       consultationType: ["In-person", "Video Call"],
+      workingHours: "9:00 AM - 5:00 PM",
     },
     {
       id: 6,
@@ -140,12 +151,14 @@ const LandingPageWithDoctors = () => {
       rating: 4.9,
       reviews: 298,
       experience: "16 years",
-      fee: "NPR 600",
+      fee: "NPR 1200",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4678901",
       address: "Bone & Joint Center, Kathmandu",
+      email: "anisha@hospital.com",
       consultationType: ["In-person"],
+      workingHours: "9:00 AM - 5:00 PM",
     },
     {
       id: 7,
@@ -155,12 +168,14 @@ const LandingPageWithDoctors = () => {
       rating: 4.5,
       reviews: 421,
       experience: "20 years",
-      fee: "NPR 1000",
+      fee: "NPR 700",
       availability: "Available Today",
       image: "👨‍⚕️",
       phone: "+977-1-4789012",
       address: "General Health Clinic, Kathmandu",
+      email: "sameer@hospital.com",
       consultationType: ["Video Call", "In-person"],
+      workingHours: "8:00 AM - 6:00 PM",
     },
     {
       id: 8,
@@ -170,12 +185,14 @@ const LandingPageWithDoctors = () => {
       rating: 4.7,
       reviews: 334,
       experience: "13 years",
-      fee: "NPR 900",
+      fee: "NPR 800",
       availability: "Available Today",
       image: "👩‍⚕️",
       phone: "+977-1-4890123",
       address: "Medical Excellence, Kathmandu",
+      email: "divya@hospital.com",
       consultationType: ["Video Call", "In-person"],
+      workingHours: "9:00 AM - 5:00 PM",
     },
   ];
 
@@ -194,45 +211,6 @@ const LandingPageWithDoctors = () => {
     skin: { dept: "Dermatology", urgency: "Low", time: "This Week" },
     tooth: { dept: "Dentistry", urgency: "Low", time: "This Week" },
     stomach: { dept: "General Medicine", urgency: "Medium", time: "Today" },
-  };
-
-  const handleBookAppointment = (doctor) => {
-    setSelectedDoctorForBooking(doctor);
-    setIsModalOpen(true);
-  };
-
-  // Handle form submission
-  const handleAppointmentSubmit = async (appointmentData) => {
-    try {
-      // Send to backend
-      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(appointmentData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Appointment booked successfully:", data);
-
-      // Add success message to chat
-      const botMessage = {
-        id: messages.length + 1,
-        type: "bot",
-        text: `✅ Appointment Confirmed!\n\nYour appointment with ${appointmentData.doctorName} has been booked successfully.\n\nConfirmation details have been sent to ${appointmentData.userEmail}.\n\nWe look forward to seeing you!`,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (err) {
-      console.error("Error booking appointment:", err);
-      throw err;
-    }
   };
 
   const analyzeSymptom = (symptomText) => {
@@ -258,7 +236,6 @@ const LandingPageWithDoctors = () => {
     return null;
   };
 
-  // Send message to backend
   const sendToBackend = async (symptomText) => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/symptoms/analyze`, {
@@ -280,11 +257,11 @@ const LandingPageWithDoctors = () => {
       const data = await response.json();
       console.log("Backend Response:", data);
 
-      return data; // Return the backend response
+      return data;
     } catch (err) {
       console.error("Error sending to backend:", err);
       setError("Failed to connect to backend. Using local analysis.");
-      return null; // Fall back to local analysis
+      return null;
     }
   };
 
@@ -305,11 +282,8 @@ const LandingPageWithDoctors = () => {
     setError(null);
 
     try {
-      // Send to backend
       const backendResponse = await sendToBackend(symptomText);
-      console.log(backendResponse);
 
-      // Use backend response if available, otherwise fall back to local analysis
       let analysis = backendResponse?.analysis || analyzeSymptom(symptomText);
 
       let botResponse = "";
@@ -317,11 +291,10 @@ const LandingPageWithDoctors = () => {
       if (analysis?.text) {
         botResponse = analysis.text;
       } else if (analysis?.isEmergency) {
-        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately.\n\nSuggested Department: **${analysis.department}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
+        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately**.\n\nSuggested Department: **${analysis.dept}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
       } else if (analysis) {
-        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.department}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
-        // Set the selected department for filtering
-        setSelectedDepartment(analysis.department);
+        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.dept}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
+        setSelectedDepartment(analysis.dept);
       } else {
         botResponse = `I couldn't determine the exact department from your symptoms. Could you provide more details? For example: location of pain, duration, additional symptoms, etc.`;
       }
@@ -342,7 +315,42 @@ const LandingPageWithDoctors = () => {
     }
   };
 
-  // Filter doctors based on selected department
+  const handleBookAppointment = (doctor) => {
+    setSelectedDoctorForBooking(doctor);
+    setIsModalOpen(true);
+  };
+
+  const handleAppointmentSubmit = async (appointmentData) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(appointmentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Appointment booked successfully:", data);
+
+      const botMessage = {
+        id: messages.length + 1,
+        type: "bot",
+        text: `✅ Appointment Confirmed!\n\nYour appointment with ${appointmentData.doctorName} has been booked successfully.\n\nDate: ${appointmentData.appointmentDate}\nTime: ${appointmentData.appointmentTime}\nConfirmation: ${appointmentData.confirmationNumber}\n\nConfirmation details have been sent to ${appointmentData.userEmail}.\n\nWe look forward to seeing you!`,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (err) {
+      console.error("Error booking appointment:", err);
+      throw err;
+    }
+  };
+
   const filteredDoctors = selectedDepartment
     ? doctorsDatabase.filter((doc) => doc.department === selectedDepartment)
     : [];
@@ -386,6 +394,15 @@ const LandingPageWithDoctors = () => {
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Reports Button */}
+              <button
+                onClick={() => navigate("/reports")}
+                className="hidden md:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-purple-500/20 transition"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Reports</span>
+              </button>
+
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
@@ -402,13 +419,39 @@ const LandingPageWithDoctors = () => {
               </button>
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden pb-4 space-y-2">
+              {t.nav.map((item) => (
+                <a
+                  key={item}
+                  href="#"
+                  className="block px-4 py-2 text-gray-300 hover:text-cyan-400 transition"
+                >
+                  {item}
+                </a>
+              ))}
+              <button
+                onClick={() => {
+                  navigate("/reports");
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold text-white flex items-center space-x-2"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Reports</span>
+              </button>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-500/20 border border-red-400/30 text-red-200 px-4 py-3 mx-4 mt-4 rounded-lg">
-          {error}
+        <div className="bg-red-500/20 border border-red-400/30 text-red-200 px-4 py-3 mx-4 mt-4 rounded-lg flex items-center space-x-2">
+          <AlertCircle className="w-5 h-5" />
+          <span>{error}</span>
         </div>
       )}
 
@@ -445,7 +488,11 @@ const LandingPageWithDoctors = () => {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                      className={`flex ${
+                        message.type === "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
                     >
                       <div
                         className={`max-w-xs sm:max-w-md ${
@@ -625,6 +672,14 @@ const LandingPageWithDoctors = () => {
                         </div>
                       </div>
 
+                      {/* Working Hours */}
+                      <div className="bg-white/5 border border-blue-400/20 rounded-lg p-3 text-xs text-gray-300 space-y-1">
+                        <p className="font-semibold text-blue-300">
+                          📋 Working Hours:
+                        </p>
+                        <p>{doctor.workingHours}</p>
+                      </div>
+
                       {/* Contact & Type */}
                       <div className="space-y-3 pt-4 border-t border-white/10">
                         <div className="flex items-center space-x-2 text-sm text-gray-300">
@@ -665,15 +720,6 @@ const LandingPageWithDoctors = () => {
                       >
                         Book Appointment
                       </button>
-                      <AppointmentModal
-                        doctor={selectedDoctorForBooking}
-                        isOpen={isModalOpen}
-                        onClose={() => {
-                          setIsModalOpen(false);
-                          setSelectedDoctorForBooking(null);
-                        }}
-                        onSubmit={handleAppointmentSubmit}
-                      />
                     </div>
                   ))}
                 </div>
@@ -694,6 +740,17 @@ const LandingPageWithDoctors = () => {
           </section>
         </div>
       </div>
+
+      {/* Appointment Modal */}
+      <AppointmentModal
+        doctor={selectedDoctorForBooking}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedDoctorForBooking(null);
+        }}
+        onSubmit={handleAppointmentSubmit}
+      />
 
       <style jsx>{`
         @keyframes blob {
