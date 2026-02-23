@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-// import cors from 'cors';
+import cors from "cors";
 import { connectDB } from "./config/db.js";
 import appointmentRoutes from "./routes/appointment.route.js";
 import geminiRoutes from "./routes/gemini.route.js";

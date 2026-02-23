@@ -66,14 +66,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
       newErrors.appointmentDate = "Appointment date is required";
     }
 
-    if (!formData.appointmentTime) {
-      newErrors.appointmentTime = "Appointment time is required";
-    }
-
-    if (!formData.symptoms.trim()) {
-      newErrors.symptoms = "Please describe your symptoms";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -508,40 +500,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                 )}
               </div>
 
-              {/* Appointment Time */}
-              <div className="space-y-2 mb-3">
-                <label
-                  className="text-sm font-semibold"
-                  style={{ color: colors.primary }}
-                >
-                  Appointment Time *
-                </label>
-                <input
-                  type="time"
-                  name="appointmentTime"
-                  value={formData.appointmentTime}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition"
-                  style={{
-                    borderColor: errors.appointmentTime
-                      ? "#dc2626"
-                      : colors.secondary,
-                    color: colors.primary,
-                  }}
-                  disabled={isSubmitting}
-                />
-                {formData.appointmentTime && (
-                  <p className="text-xs text-gray-600">
-                    🕐 {formData.appointmentTime}
-                  </p>
-                )}
-                {errors.appointmentTime && (
-                  <p className="text-xs text-red-600">
-                    {errors.appointmentTime}
-                  </p>
-                )}
-              </div>
-
               {/* Consultation Type */}
               <div className="space-y-2 mb-3">
                 <label
@@ -574,32 +532,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                     </label>
                   ))}
                 </div>
-              </div>
-
-              {/* Symptoms */}
-              <div className="space-y-2">
-                <label
-                  className="text-sm font-semibold"
-                  style={{ color: colors.primary }}
-                >
-                  Symptoms / Chief Complaint *
-                </label>
-                <textarea
-                  name="symptoms"
-                  value={formData.symptoms}
-                  onChange={handleInputChange}
-                  placeholder="Briefly describe your symptoms or reason for visit"
-                  rows="3"
-                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition resize-none"
-                  style={{
-                    borderColor: errors.symptoms ? "#dc2626" : colors.secondary,
-                    color: colors.primary,
-                  }}
-                  disabled={isSubmitting}
-                />
-                {errors.symptoms && (
-                  <p className="text-xs text-red-600">{errors.symptoms}</p>
-                )}
               </div>
             </div>
 
