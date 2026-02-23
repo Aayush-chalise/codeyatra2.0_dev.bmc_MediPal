@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 app.use("/api", geminiRoutes);
 
 // Routes
-app.use('/', appointmentRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
