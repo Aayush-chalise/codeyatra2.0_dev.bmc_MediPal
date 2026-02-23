@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-// import cors from 'cors';
+import cors from 'cors';
 import { connectDB } from './config/db.js';
 import appointmentRoutes from './routes/appointment.route.js';
 import geminiRoutes from './routes/gemini.route.js';
@@ -12,21 +12,17 @@ dotenv.config();
 const app = express();
 
 // Middleware
-// app.use(cors());
+app.use(cors());
 app.use(express.json());
 
 // Connect to Database
 connectDB();
 
-// Health Check
-app.get('/', (req, res) => {
+// Account login and signup routes
+app.use("/", accountRoutes)
 
-  res.send('MediPal API is running...');
-});
 
 app.use("/api", geminiRoutes);
-
-// Routes
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/account', accountRoutes);

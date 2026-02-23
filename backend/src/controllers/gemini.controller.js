@@ -1,6 +1,7 @@
 import {GoogleGenAI} from '@google/genai';
 import { GEMINI_API_KEY } from '../config/env.js';
 import { json } from 'express';
+import Doctor from '../models/Doctor.js';
 
 
 const ai = new GoogleGenAI({apiKey: GEMINI_API_KEY});
@@ -39,6 +40,7 @@ User message: "${userMessage}"
     
     let jsonResponse = response.text.replace(/^\s*```json\s*|\s*```\s*$/g, '').trim();
     let jsonData = JSON.parse(jsonResponse);
+   
     console.log({ analysis: jsonData });
     res.json({ analysis: jsonData });
    
