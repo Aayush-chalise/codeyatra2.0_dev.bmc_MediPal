@@ -1,10 +1,10 @@
-import { createDoctor } from "../controllers/Doctor.controller.js";
-import { createUser } from "../controllers/User.controller.js";
+import { createUser,loginUser } from "../controllers/User.controller.js";
 import express from "express";
 
 const router = express.Router();
 
-router.post("/adduser", createUser);
-router.post("/addDoctor", createDoctor);
+router.post("/signup", createUser);
+router.post("/login", loginUser);
+
 
 export default router;

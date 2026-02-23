@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -7,6 +8,16 @@ import geminiRoutes from "./routes/gemini.route.js";
 import scheduleRoutes from "./routes/Schedule.route.js";
 import accountRoutes from "./routes/account.route.js";
 import doctorRoutes from "./routes/doctor.routes.js";
+=======
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import { connectDB } from './config/db.js';
+import appointmentRoutes from './routes/appointment.route.js';
+import geminiRoutes from './routes/gemini.route.js';
+import scheduleRoutes from './routes/Schedule.route.js';
+import accountRoutes from './routes/account.route.js';
+>>>>>>> main
 
 dotenv.config();
 
@@ -19,6 +30,7 @@ app.use(express.json());
 // Connect to Database
 connectDB();
 
+<<<<<<< HEAD
 // Health Check
 app.get("/", (req, res) => {
   res.send("MediPal API is running...");
@@ -31,6 +43,17 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/schedule", scheduleRoutes);
 app.use("/api/account", accountRoutes);
 app.use("/api", doctorRoutes);
+=======
+// Account login and signup routes
+app.use("/", accountRoutes)
+
+
+app.use("/api", geminiRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/schedule', scheduleRoutes);
+app.use('/api/account', accountRoutes);
+
+>>>>>>> main
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
