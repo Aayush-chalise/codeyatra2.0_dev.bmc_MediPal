@@ -8,9 +8,7 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
     userPhone: "",
     userAddress: "",
     appointmentDate: "",
-    appointmentTime: "",
     consultationType: "In-person",
-    symptoms: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,14 +53,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
 
     if (!formData.appointmentDate) {
       newErrors.appointmentDate = "Appointment date is required";
-    }
-
-    if (!formData.appointmentTime) {
-      newErrors.appointmentTime = "Appointment time is required";
-    }
-
-    if (!formData.symptoms.trim()) {
-      newErrors.symptoms = "Please describe your symptoms";
     }
 
     setErrors(newErrors);
@@ -407,35 +397,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                 )}
               </div>
 
-              {/* Appointment Time */}
-              <div className="space-y-2 mb-3">
-                <label className="text-sm font-semibold text-gray-300">
-                  Appointment Time *
-                </label>
-                <input
-                  type="time"
-                  name="appointmentTime"
-                  value={formData.appointmentTime}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 transition ${
-                    errors.appointmentTime
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
-                  disabled={isSubmitting}
-                />
-                {formData.appointmentTime && (
-                  <p className="text-xs text-gray-400">
-                    🕐 {formData.appointmentTime}
-                  </p>
-                )}
-                {errors.appointmentTime && (
-                  <p className="text-xs text-red-400">
-                    {errors.appointmentTime}
-                  </p>
-                )}
-              </div>
-
               {/* Consultation Type */}
               <div className="space-y-2 mb-3">
                 <label className="text-sm font-semibold text-gray-300">
@@ -460,29 +421,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                     </label>
                   ))}
                 </div>
-              </div>
-
-              {/* Symptoms / Chief Complaint */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-300">
-                  Symptoms / Chief Complaint *
-                </label>
-                <textarea
-                  name="symptoms"
-                  value={formData.symptoms}
-                  onChange={handleInputChange}
-                  placeholder="Briefly describe your symptoms or reason for visit"
-                  rows="3"
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition resize-none ${
-                    errors.symptoms
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
-                  disabled={isSubmitting}
-                />
-                {errors.symptoms && (
-                  <p className="text-xs text-red-400">{errors.symptoms}</p>
-                )}
               </div>
             </div>
 
