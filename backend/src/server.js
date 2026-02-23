@@ -1,11 +1,16 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import { connectDB } from './config/db.js';
-import appointmentRoutes from './routes/appointment.route.js';
-import geminiRoutes from './routes/gemini.route.js';
-import scheduleRoutes from './routes/Schedule.route.js';
-import accountRoutes from './routes/account.route.js';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { connectDB } from "./config/db.js";
+import appointmentRoutes from "./routes/appointment.route.js";
+// import geminiRoutes from "./routes/gemini.route.js";
+import scheduleRoutes from "./routes/Schedule.route.js";
+import accountRoutes from "./routes/account.route.js";
+import protect from "./middleware/auth.middleware.js";
+import doctorRouter from "./routes/doctor.routes.js";
+import { analyzeSymptomsgrok } from "./controllers/grok.controller.js";
+
+
 
 dotenv.config();
 
@@ -17,16 +22,19 @@ app.use(express.json());
 
 // Connect to Database
 connectDB();
-
+app.get("/", (req, res) => {
+  res.send("Welcome to MediPal API");
+});
 // Account login and signup routes
-app.use("/", accountRoutes)
+app.use("/", accountRoutes);
+// app.use("/api", geminiRoutes );
 
+app.use("/api/symptoms/analyze", analyzeSymptomsgrok);
+app.use("/api/doctors", doctorRouter);
+// app.use(protect);
 
-app.use("/api", geminiRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/schedule', scheduleRoutes);
-app.use('/api/account', accountRoutes);
-
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/schedule", scheduleRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
