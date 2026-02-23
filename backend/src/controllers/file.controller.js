@@ -28,7 +28,8 @@ export const sumarrizeMedicalReport = async (req, res) => {
             },
             {
               text: `
-              Analyze this report and return ONLY raw JSON:
+              Analyze this report i need a concise summary abouth the report what does the report says , key points,  risk level assessment,mention the follow-up date if exist  ,possibilities of the future situations,aware me about the risk on my personal health if its to much risky .
+              The JSON should be in the format:
 
               {
                 "summary": "...",
