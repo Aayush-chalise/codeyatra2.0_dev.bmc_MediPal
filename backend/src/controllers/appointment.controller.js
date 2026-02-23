@@ -13,7 +13,7 @@ export const createAppointment = async (req, res) => {
     if (!isAvailable) {
       return res.status(400).json({ message: "Doctor is not available for this time slot" });
     }
-    
+
     const newAppointment = await  Appointment.create ({
       patient: patientId,
       doctor: doctorId,
@@ -21,6 +21,10 @@ export const createAppointment = async (req, res) => {
       appointmentTime,
       consultationType
     });
+    // update the doctor's booked slots
+    const doctor = await Doctor.findById(doctorId);
+    doctor.bookedSlots.push({ date: appointmentDate, time: appointmentTime, bookedAt: new Date() });
+    await doctor.save();
 
     res.status(201).json({ message: "Appointment created successfully", appointment: newAppointment });
   } catch (error) {
