@@ -16,6 +16,7 @@ function App() {
           path="/auth"
           element={<AuthModal isOpen={true} onClose={() => {}} />}
         />
+        
       </Routes>
     </Router>
   );

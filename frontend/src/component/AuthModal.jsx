@@ -13,9 +13,41 @@ import {
   Phone,
 } from "lucide-react";
 
+// ── Token & User helpers ─────────────────────────────────────────────────────
+const AUTH_TOKEN_KEY = "medipal_token";
+const AUTH_USER_KEY = "medipal_user";
+
+const saveAuth = (data) => {
+  const token = data.token ?? data.accessToken ?? data.jwt ?? null;
+  console.log(token);
+  const user = {
+    id: data.id ?? data.user?._id ?? data.user?.id ?? "",
+    name: data.name ?? data.fullName ?? data.user?.name ?? "User",
+    email: data.email ?? data.user?.email ?? "",
+    phone: data.phone ?? data.user?.phone ?? "", // optional — if backend returns it
+  };
+
+  if (token) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+  } else {
+    console.warn(
+      "No token received from server — user may not be authenticated",
+    );
+  }
+
+  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+  return { ...user, token };
+};
+
+const clearAuth = () => {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
-  console.log("hello from auths")
-  const [activeTab, setActiveTab] = useState("login"); // "login" | "signup"
+  const [activeTab, setActiveTab] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +102,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     if (!loginData.email.trim()) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginData.email))
       newErrors.email = "Please enter a valid email";
-    if (!loginData.password) newErrors.password = "Password is required";
+    if (!loginData.password.trim()) newErrors.password = "Password is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -82,21 +114,25 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     if (!signupData.email.trim()) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupData.email))
       newErrors.email = "Please enter a valid email";
+
     if (!signupData.phone.trim()) newErrors.phone = "Phone number is required";
-    else if (!/^\+?[1-9]\d{1,14}$/.test(signupData.phone.replace(/\s/g, "")))
-      newErrors.phone = "Please enter a valid phone number";
+    else if (!/^\+?[1-9]\d{7,14}$/.test(signupData.phone.replace(/\D/g, "")))
+      newErrors.phone = "Please enter a valid phone number (7–15 digits)";
+
     if (!signupData.password) newErrors.password = "Password is required";
     else if (signupData.password.length < 8)
       newErrors.password = "Password must be at least 8 characters";
+
     if (!signupData.confirmPassword)
       newErrors.confirmPassword = "Please confirm your password";
     else if (signupData.password !== signupData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // ── Input handlers ──────────────────────────────────────────────────────────
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
@@ -109,55 +145,80 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // ── Login ───────────────────────────────────────────────────────────────────
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!validateLogin()) return;
+
     setIsSubmitting(true);
     setErrors({});
+    setSuccessMessage("");
+
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const res = await fetch(`${BACKEND_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Login failed");
+      }
+
+      const userData = saveAuth(data);
+
       setSuccessMessage("Logged in successfully! Redirecting...");
       setTimeout(() => {
-        onAuthSuccess?.(data);
+        onAuthSuccess?.(userData);
         handleClose();
-      }, 1200);
+      }, 1000);
     } catch (err) {
-      setErrors({ submit: err.message });
+      setErrors({ submit: err.message || "Something went wrong" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // ── Signup ──────────────────────────────────────────────────────────────────
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     if (!validateSignup()) return;
+
     setIsSubmitting(true);
     setErrors({});
+    setSuccessMessage("");
+
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      const payload = {
+        fullName: signupData.fullName.trim(),
+        email: signupData.email.trim(),
+        phone: signupData.phone.trim(),
+        password: signupData.password,
+      };
+
+      const res = await fetch(`${BACKEND_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: signupData.fullName,
-          email: signupData.email,
-          phone: signupData.phone,
-          password: signupData.password,
-        }),
+        body: JSON.stringify(payload),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Registration failed");
-      setSuccessMessage("Account created! You can now log in.");
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Registration failed");
+      }
+
+      const userData = saveAuth(data);
+
+      setSuccessMessage("Account created successfully! Welcome to MediPal 🎉");
       setTimeout(() => {
-        handleTabSwitch("login");
-      }, 1500);
+        onAuthSuccess?.(userData);
+        handleClose();
+      }, 1400);
     } catch (err) {
-      setErrors({ submit: err.message });
+      setErrors({ submit: err.message || "Something went wrong" });
     } finally {
       setIsSubmitting(false);
     }
@@ -165,10 +226,10 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
 
   if (!isOpen) return null;
 
-  // ── Shared input style ───────────────────────────────────────────────────────
-  const inputClass =
+  const inputBaseClass =
     "w-full pl-10 pr-4 py-3 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-1 transition text-sm";
-  const inputStyle = (field) => ({
+
+  const getInputStyle = (field) => ({
     borderColor: errors[field] ? "#dc2626" : colors.secondary,
     color: colors.primary,
   });
@@ -179,12 +240,11 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         className="relative w-full max-w-md rounded-3xl shadow-2xl overflow-hidden"
         style={{ backgroundColor: colors.light }}
       >
-        {/* ── Decorative header strip ── */}
+        {/* Header */}
         <div
           className="relative px-8 pt-8 pb-6"
           style={{ backgroundColor: colors.primary }}
         >
-          {/* Close */}
           <button
             onClick={handleClose}
             disabled={isSubmitting}
@@ -194,7 +254,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             <X className="w-5 h-5" />
           </button>
 
-          {/* Logo mark */}
           <div className="flex items-center space-x-3 mb-5">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -210,20 +269,19 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             </span>
           </div>
 
-          {/* Heading */}
           <h2
             className="text-2xl font-black mb-1"
             style={{ color: colors.light }}
           >
             {activeTab === "login" ? "Welcome back" : "Create your account"}
           </h2>
+
           <p className="text-sm opacity-75" style={{ color: colors.secondary }}>
             {activeTab === "login"
               ? "Sign in to manage your appointments"
               : "Join MediPal and take charge of your health"}
           </p>
 
-          {/* Tabs */}
           <div
             className="flex mt-6 rounded-xl p-1"
             style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
@@ -246,9 +304,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
           </div>
         </div>
 
-        {/* ── Form body ── */}
+        {/* Form body */}
         <div className="px-8 py-6">
-          {/* Success */}
           {successMessage && (
             <div
               className="mb-4 flex items-center space-x-2 border-2 rounded-xl px-4 py-3 text-sm"
@@ -263,7 +320,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             </div>
           )}
 
-          {/* Submit error */}
           {errors.submit && (
             <div
               className="mb-4 flex items-center space-x-2 border-2 rounded-xl px-4 py-3 text-sm"
@@ -278,7 +334,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             </div>
           )}
 
-          {/* ── LOGIN FORM ── */}
+          {/* LOGIN FORM */}
           {activeTab === "login" && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               {/* Email */}
@@ -300,8 +356,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     value={loginData.email}
                     onChange={handleLoginChange}
                     placeholder="you@example.com"
-                    className={inputClass}
-                    style={inputStyle("email")}
+                    className={inputBaseClass}
+                    style={getInputStyle("email")}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -329,9 +385,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     value={loginData.password}
                     onChange={handleLoginChange}
                     placeholder="Enter your password"
-                    className={inputClass}
+                    className={inputBaseClass}
                     style={{
-                      ...inputStyle("password"),
+                      ...getInputStyle("password"),
                       paddingRight: "2.75rem",
                     }}
                     disabled={isSubmitting}
@@ -354,7 +410,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 )}
               </div>
 
-              {/* Forgot password */}
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -365,7 +420,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 </button>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -384,7 +438,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             </form>
           )}
 
-          {/* ── SIGNUP FORM ── */}
+          {/* SIGNUP FORM */}
           {activeTab === "signup" && (
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               {/* Full Name */}
@@ -406,8 +460,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     value={signupData.fullName}
                     onChange={handleSignupChange}
                     placeholder="Your full name"
-                    className={inputClass}
-                    style={inputStyle("fullName")}
+                    className={inputBaseClass}
+                    style={getInputStyle("fullName")}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -435,8 +489,8 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     value={signupData.email}
                     onChange={handleSignupChange}
                     placeholder="you@example.com"
-                    className={inputClass}
-                    style={inputStyle("email")}
+                    className={inputBaseClass}
+                    style={getInputStyle("email")}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -463,9 +517,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     name="phone"
                     value={signupData.phone}
                     onChange={handleSignupChange}
-                    placeholder="+977-9801234567"
-                    className={inputClass}
-                    style={inputStyle("phone")}
+                    placeholder="+977 9801234567"
+                    className={inputBaseClass}
+                    style={getInputStyle("phone")}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -493,9 +547,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     value={signupData.password}
                     onChange={handleSignupChange}
                     placeholder="Min. 8 characters"
-                    className={inputClass}
+                    className={inputBaseClass}
                     style={{
-                      ...inputStyle("password"),
+                      ...getInputStyle("password"),
                       paddingRight: "2.75rem",
                     }}
                     disabled={isSubmitting}
@@ -537,9 +591,9 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                     value={signupData.confirmPassword}
                     onChange={handleSignupChange}
                     placeholder="Re-enter your password"
-                    className={inputClass}
+                    className={inputBaseClass}
                     style={{
-                      ...inputStyle("confirmPassword"),
+                      ...getInputStyle("confirmPassword"),
                       paddingRight: "2.75rem",
                     }}
                     disabled={isSubmitting}
@@ -564,7 +618,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
                 )}
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -583,7 +636,6 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
             </form>
           )}
 
-          {/* Switch tab hint */}
           <p className="text-center text-xs mt-5 text-gray-500">
             {activeTab === "login"
               ? "Don't have an account? "

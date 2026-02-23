@@ -31,8 +31,11 @@ export const createDoctor = async (req, res) => {
 
 export const getDoctors = async (req, res) => {
     try {
-        const doctors = await Doctor.find( { department: req.query.department } );
+        console.log( req.query.department);
+        const doctors = await Doctor.find({ department: req.query.department });
+        console.log(req.query.department);
         res.json({ doctors });
+        console.log(doctors);
     } catch (error) {
         console.error("Error fetching doctors:", error);
         res.status(500).json({ message: "Failed to fetch doctors" });

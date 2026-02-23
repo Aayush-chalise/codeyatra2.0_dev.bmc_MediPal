@@ -1,11 +1,11 @@
-import {GoogleGenAI} from '@google/genai';
-import { GEMINI_API_KEY } from '../config/env.js';
-import { json } from 'express';
-import Doctor from '../models/Doctor.js';
+import { GoogleGenAI } from "@google/genai";
+import { GEMINI_API_KEY } from "../config/env.js";
+import { json } from "express";
+import Doctor from "../models/Doctor.js";
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-export const analyzeSymptoms = async (req, res) => {
+export const analyzeSymptomsgemini = async (req, res) => {
   console.log(GEMINI_API_KEY);
   const symptom = req.body.symptom;
   console.log("message received:", req.body);
@@ -38,11 +38,12 @@ User message: "${userMessage}"
     model: "gemini-3-flash-preview",
     contents: prompt,
   });
-    
-    let jsonResponse = response.text.replace(/^\s*```json\s*|\s*```\s*$/g, '').trim();
-    let jsonData = JSON.parse(jsonResponse);
-   
-    console.log({ analysis: jsonData });
-    res.json({ analysis: jsonData });
-   
-}
+
+  let jsonResponse = response.text
+    .replace(/^\s*```json\s*|\s*```\s*$/g, "")
+    .trim();
+  let jsonData = JSON.parse(jsonResponse);
+
+  console.log({ analysis: jsonData });
+  res.json({ analysis: jsonData });
+};

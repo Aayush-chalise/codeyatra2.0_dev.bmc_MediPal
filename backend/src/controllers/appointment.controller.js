@@ -3,20 +3,21 @@ import Appointment from "../models/Appointment.js";
 export const createAppointment = async (req, res) => {
   try {
     const {
-      patientId,
+       
       doctorId,
       appointmentDate,
-      appointmentTime,
-      consultationType,
+      
     } = req.body;
+    const appointmentTime = Date.now().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
     console.log(req.body);
 
     if (
-      !patientId ||
+     
       !doctorId ||
       !appointmentDate ||
-      !appointmentTime ||
-      !consultationType
+      !appointmentTime 
+     
     ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -32,7 +33,9 @@ export const createAppointment = async (req, res) => {
         .status(400)
         .json({ message: "Doctor is not available for this time slot" });
     }
+   
 
+    
     const newAppointment = await Appointment.create({
       patient: patientId,
       doctor: doctorId,

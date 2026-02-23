@@ -1,8 +1,7 @@
 // middleware/auth.js
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import user from "../models/user.js";
 import { JWT_SECRET } from "../config/env.js";
-
 
 const protect = async (req, res, next) => {
   let token;
@@ -15,9 +14,10 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1]; // get the token after 'Bearer'
       // Verify token
       const decoded = jwt.verify(token, JWT_SECRET);
-      
+
       // Attach user to request
       req.user = await user.findById(decoded.id).select("-password");
+      console.log("Authenticated user:", req.user);
       next();
     } catch (error) {
       console.error(error);
@@ -28,4 +28,4 @@ const protect = async (req, res, next) => {
   }
 };
 
-export default protect
+export default protect;

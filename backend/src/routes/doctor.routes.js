@@ -4,6 +4,6 @@ import express from "express";
 
 const router = express.Router();
 
-router.get("/doctors", getDoctors);
+router.get("/", getDoctors);
 
 export default router;

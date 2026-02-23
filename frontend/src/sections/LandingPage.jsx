@@ -6,17 +6,17 @@ import {
   Brain,
   Send,
   Loader,
-  Star,
-  MapPin,
   Clock,
   Phone,
-  Video,
   CheckCircle,
   AlertCircle,
   FileText,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppointmentModal from "../component/AppointmentModal";
+import AuthModal from "../component/AuthModal";
 
 const LandingPageWithDoctors = () => {
   const navigate = useNavigate();
@@ -39,7 +39,11 @@ const LandingPageWithDoctors = () => {
   const [selectedDoctorForBooking, setSelectedDoctorForBooking] =
     useState(null);
 
-  // Doctor data state
+  // ── Auth state ──────────────────────────────────────────────────────────────
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null); // { name, email, token }
+
+  // ── Doctor data state ───────────────────────────────────────────────────────
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
   const [doctorsError, setDoctorsError] = useState(null);
@@ -67,7 +71,7 @@ const LandingPageWithDoctors = () => {
 
   const t = translations[language];
 
-  // ─── Fetch doctors from backend whenever department changes ───────────────────
+  // ── Fetch doctors whenever selected department changes ──────────────────────
   useEffect(() => {
     if (!selectedDepartment) {
       setDoctors([]);
@@ -83,13 +87,9 @@ const LandingPageWithDoctors = () => {
         const response = await fetch(
           `${BACKEND_URL}/api/doctors?department=${encodeURIComponent(selectedDepartment)}`,
         );
-
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         const data = await response.json();
-        // Support both { doctors: [...] } and plain array responses
+        console.log(data);
         setDoctors(Array.isArray(data) ? data : (data.doctors ?? []));
       } catch (err) {
         console.error("Failed to fetch doctors:", err);
@@ -101,8 +101,20 @@ const LandingPageWithDoctors = () => {
 
     fetchDoctors();
   }, [selectedDepartment]);
-  // ─────────────────────────────────────────────────────────────────────────────
 
+  // ── Auth handlers ───────────────────────────────────────────────────────────
+  const handleAuthSuccess = (userData) => {
+    // Normalise whatever shape your backend returns
+    setCurrentUser({
+      name: userData.name ?? userData.user?.name ?? "User",
+      email: userData.email ?? userData.user?.email ?? "",
+      token: userData.token ?? userData.accessToken ?? "",
+    });
+  };
+
+  const handleLogout = () => setCurrentUser(null);
+
+  // ── Symptom analysis ────────────────────────────────────────────────────────
   const symptomKeywords = {
     "chest pain": { dept: "Cardiology", urgency: "High", time: "Today" },
     heart: { dept: "Cardiology", urgency: "High", time: "Today" },
@@ -123,19 +135,17 @@ const LandingPageWithDoctors = () => {
   const analyzeSymptom = (symptomText) => {
     const lowerText = symptomText.toLowerCase();
     for (const keyword of ["bleeding", "unconscious", "attack", "severe"]) {
-      if (lowerText.includes(keyword)) {
+      if (lowerText.includes(keyword))
         return {
           dept: "Emergency",
           urgency: "Critical",
           time: "Immediate",
           isEmergency: true,
         };
-      }
     }
     for (const [keyword, suggestion] of Object.entries(symptomKeywords)) {
-      if (lowerText.includes(keyword)) {
+      if (lowerText.includes(keyword))
         return { ...suggestion, isEmergency: false };
-      }
     }
     return null;
   };
@@ -148,8 +158,7 @@ const LandingPageWithDoctors = () => {
         body: JSON.stringify({ symptom: symptomText }),
       });
       if (!response.ok) throw new Error(`Backend error: ${response.status}`);
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (err) {
       console.error("Error sending to backend:", err);
       setError("Failed to connect to backend. Using local analysis.");
@@ -161,12 +170,11 @@ const LandingPageWithDoctors = () => {
     if (!inputValue.trim()) return;
 
     const userMessage = {
-      id: messages.length + 1,
+      id: new Date().getTime(),
       type: "user",
       text: inputValue,
       timestamp: new Date(),
     };
-
     setMessages([...messages, userMessage]);
     const symptomText = inputValue;
     setInputValue("");
@@ -231,6 +239,7 @@ const LandingPageWithDoctors = () => {
           timestamp: new Date(),
         },
       ]);
+      // navigate("/")
     } catch (err) {
       console.error("Error booking appointment:", err);
       throw err;
@@ -242,7 +251,7 @@ const LandingPageWithDoctors = () => {
       className="min-h-screen text-gray-900 overflow-hidden"
       style={{ backgroundColor: colors.light }}
     >
-      {/* Navigation */}
+      {/* ── Navigation ──────────────────────────────────────────────────────── */}
       <nav
         className="sticky top-0 z-50 shadow-md border-b"
         style={{
@@ -252,6 +261,7 @@ const LandingPageWithDoctors = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
+            {/* Logo */}
             <div className="flex items-center space-x-3 cursor-pointer">
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -265,6 +275,7 @@ const LandingPageWithDoctors = () => {
               </div>
             </div>
 
+            {/* Desktop nav links */}
             <div className="hidden md:flex items-center space-x-8">
               {t.nav.map((item) => (
                 <a
@@ -278,7 +289,9 @@ const LandingPageWithDoctors = () => {
               ))}
             </div>
 
-            <div className="flex items-center space-x-4">
+            {/* Right controls */}
+            <div className="flex items-center space-x-3">
+              {/* Reports */}
               <button
                 onClick={() => navigate("/reports")}
                 className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition hover:shadow-lg"
@@ -290,17 +303,56 @@ const LandingPageWithDoctors = () => {
                 <FileText className="w-4 h-4" />
                 <span>Reports</span>
               </button>
-              <button
-                onClick={() => navigate("/auth")}
-                className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition hover:shadow-lg"
-                style={{
-                  backgroundColor: colors.secondary,
-                  color: colors.primary,
-                }}
-              >
-                <span>Login</span>
-              </button>
 
+              {/* ── Auth: shows Login button OR user chip ── */}
+              {currentUser ? (
+                <div className="hidden md:flex items-center space-x-2">
+                  {/* User chip */}
+                  <div
+                    className="flex items-center space-x-2 px-3 py-1.5 rounded-lg border-2"
+                    style={{
+                      borderColor: colors.secondary,
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
+                      style={{
+                        backgroundColor: colors.secondary,
+                        color: colors.primary,
+                      }}
+                    >
+                      {currentUser.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span
+                      className="text-sm font-semibold max-w-[100px] truncate"
+                      style={{ color: colors.light }}
+                    >
+                      {currentUser.name}
+                    </span>
+                  </div>
+                  {/* Logout */}
+                  <button
+                    onClick={handleLogout}
+                    title="Sign out"
+                    className="p-2 rounded-lg transition hover:opacity-70"
+                    style={{ color: colors.secondary }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold border-2 transition hover:bg-white hover:bg-opacity-10"
+                  style={{ borderColor: colors.secondary, color: colors.light }}
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Login</span>
+                </button>
+              )}
+
+              {/* Language */}
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
@@ -314,6 +366,8 @@ const LandingPageWithDoctors = () => {
                 <option value="en">English</option>
                 <option value="ne">नेपाली</option>
               </select>
+
+              {/* Hamburger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 rounded-lg transition"
@@ -324,6 +378,7 @@ const LandingPageWithDoctors = () => {
             </div>
           </div>
 
+          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div
               className="md:hidden pb-4 space-y-2 border-t"
@@ -353,6 +408,48 @@ const LandingPageWithDoctors = () => {
                 <FileText className="w-4 h-4" />
                 <span>Reports</span>
               </button>
+
+              {/* Mobile auth */}
+              {currentUser ? (
+                <div className="flex items-center justify-between px-4 py-2">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
+                      style={{
+                        backgroundColor: colors.secondary,
+                        color: colors.primary,
+                      }}
+                    >
+                      {currentUser.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: colors.light }}
+                    >
+                      {currentUser.name}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="text-xs font-semibold underline"
+                    style={{ color: colors.secondary }}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsAuthModalOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 border-2 transition"
+                  style={{ borderColor: colors.secondary, color: colors.light }}
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Login / Sign Up</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -373,7 +470,7 @@ const LandingPageWithDoctors = () => {
         </div>
       )}
 
-      {/* Main Container */}
+      {/* ── Main Container ──────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Chatbot Section */}
@@ -418,6 +515,7 @@ const LandingPageWithDoctors = () => {
                   backgroundColor: "white",
                 }}
               >
+                {/* Messages */}
                 <div
                   className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
                   style={{ backgroundColor: colors.light }}
@@ -457,7 +555,6 @@ const LandingPageWithDoctors = () => {
                       </div>
                     </div>
                   ))}
-
                   {isLoading && (
                     <div className="flex justify-start">
                       <div
@@ -482,6 +579,7 @@ const LandingPageWithDoctors = () => {
                   )}
                 </div>
 
+                {/* Input */}
                 <div
                   className="border-t-2 p-4"
                   style={{
@@ -525,6 +623,7 @@ const LandingPageWithDoctors = () => {
                 </div>
               </div>
 
+              {/* Example prompts */}
               <div className="mt-6">
                 <p
                   className="text-center text-xs font-medium mb-3"
@@ -585,7 +684,6 @@ const LandingPageWithDoctors = () => {
                   )}
                 </div>
 
-                {/* Loading state */}
                 {doctorsLoading && (
                   <div className="flex flex-col items-center justify-center py-20 space-y-4">
                     <Loader
@@ -601,7 +699,6 @@ const LandingPageWithDoctors = () => {
                   </div>
                 )}
 
-                {/* Error state */}
                 {doctorsError && !doctorsLoading && (
                   <div
                     className="border-2 rounded-xl p-6 flex items-center space-x-3"
@@ -625,7 +722,6 @@ const LandingPageWithDoctors = () => {
                   </div>
                 )}
 
-                {/* Empty state */}
                 {!doctorsLoading && !doctorsError && doctors.length === 0 && (
                   <div
                     className="border-2 rounded-xl p-10 text-center space-y-3"
@@ -648,7 +744,6 @@ const LandingPageWithDoctors = () => {
                   </div>
                 )}
 
-                {/* Doctors list */}
                 {!doctorsLoading && !doctorsError && doctors.length > 0 && (
                   <div className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-hide">
                     {doctors.map((doctor) => (
@@ -660,7 +755,6 @@ const LandingPageWithDoctors = () => {
                           backgroundColor: "white",
                         }}
                       >
-                        {/* Doctor Header */}
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-4">
                             <div className="text-4xl">
@@ -679,13 +773,6 @@ const LandingPageWithDoctors = () => {
                               >
                                 {doctor.specialization}
                               </p>
-                              {/* <div className="flex items-center space-x-1 mt-2">
-                                <Star
-                                  className="w-4 h-4"
-                                  style={{ color: colors.secondary }}
-                                  fill={colors.secondary}
-                                />
-                              </div> */}
                             </div>
                           </div>
                           <div className="text-right">
@@ -701,7 +788,6 @@ const LandingPageWithDoctors = () => {
                           </div>
                         </div>
 
-                        {/* Doctor Info Grid */}
                         <div
                           className="grid grid-cols-2 gap-4 py-4 border-t-2"
                           style={{ borderColor: colors.secondary }}
@@ -733,12 +819,11 @@ const LandingPageWithDoctors = () => {
                               className="text-sm font-semibold"
                               style={{ color: colors.secondary }}
                             >
-                              True
+                              Available
                             </p>
                           </div>
                         </div>
 
-                        {/* Working Hours */}
                         <div
                           className="rounded-lg p-3 text-xs space-y-1 border-2"
                           style={{
@@ -749,26 +834,15 @@ const LandingPageWithDoctors = () => {
                         >
                           <p className="font-semibold">📋 Working Hours:</p>
                           <p>
-                            {doctor.schedule.workingHours.start}-
-                            {doctor.schedule.workingHours.end}
+                            {doctor.schedule?.workingHours?.start} -{" "}
+                            {doctor.schedule?.workingHours?.end}
                           </p>
                         </div>
 
-                        {/* Contact */}
                         <div
                           className="space-y-3 pt-4 border-t-2"
                           style={{ borderColor: colors.secondary }}
                         >
-                          {/* <div
-                            className="flex items-center space-x-2 text-sm"
-                            style={{ color: colors.primary }}
-                           >
-                            <MapPin
-                              className="w-4 h-4"
-                              style={{ color: colors.secondary }}
-                            />
-                            <span>{doctor.address}</span>
-                          </div> */}
                           <div
                             className="flex items-center space-x-2 text-sm"
                             style={{ color: colors.primary }}
@@ -819,6 +893,13 @@ const LandingPageWithDoctors = () => {
           </section>
         </div>
       </div>
+
+      {/* ── Modals ──────────────────────────────────────────────────────────── */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
 
       <AppointmentModal
         doctor={selectedDoctorForBooking}

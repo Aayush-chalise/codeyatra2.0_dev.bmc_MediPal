@@ -99,6 +99,7 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`, // if your backend requires auth
         },
         body: JSON.stringify(appointmentData),
       });
@@ -127,40 +128,15 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
     setSuccessMessage("");
 
     try {
-      const confirmNum = generateConfirmationNumber();
-      setConfirmationNumber(confirmNum);
+      console.log(doctor);
+      // const confirmNum = generateConfirmationNumber();
+      // setConfirmationNumber(confirmNum);
 
       // Prepare appointment data to send to backend
       const appointmentData = {
-        // User Information
-        userName: formData.userName,
-        userEmail: formData.userEmail,
-        userPhone: formData.userPhone,
-        userAddress: formData.userAddress,
-
-        // Appointment Information
-        appointmentDate: formData.appointmentDate,
-        appointmentTime: formData.appointmentTime,
-        consultationType: formData.consultationType,
-        symptoms: formData.symptoms,
-
-        // Doctor Information
-        doctorId: doctor.id,
-        doctorName: doctor.name,
-        doctorEmail: doctor.email,
-        doctorPhone: doctor.phone,
-        doctorAddress: doctor.address,
-        doctorDepartment: doctor.department,
-        doctorFee: doctor.fee,
-        doctorSpecialization: doctor.specialization,
-        doctorExperience: doctor.experience,
-
-        // Appointment Meta Information
-        confirmationNumber: confirmNum,
-        appointmentId: `APT-${Date.now()}`,
-        status: "confirmed",
-        createdAt: new Date().toISOString(),
-        appointmentDateTime: `${formData.appointmentDate}T${formData.appointmentTime}`,
+        doctorId: doctor._id,
+        appointmentDate: `${formData.appointmentDate}`,
+        appointmentTime: `${formData.appointmentTime}`,
       };
 
       console.log("Sending to backend:", appointmentData);
