@@ -34,7 +34,7 @@ Do not include any text outside JSON if symptoms are detected and you are confid
 User message: "${userMessage}"
 `;
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-flash-preview",
     contents: prompt,
   });
 
