@@ -1,16 +1,6 @@
 import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema({
-  appointmentId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-
-  confirmationNumber: {
-    type: String,
-    required: true,
-  },
 
   patient: {
     type: mongoose.Schema.Types.ObjectId,
@@ -46,7 +36,7 @@ const appointmentSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["pending", "confirmed", "cancelled", "completed"],
-    default: "confirmed",
+    default: "pending",
   },
 
   cancellationReason: {
@@ -59,6 +49,8 @@ const appointmentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   }
-});
+}, { 
+    timestamps: true 
+ });
 
 export default mongoose.model("Appointment", appointmentSchema);

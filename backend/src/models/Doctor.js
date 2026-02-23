@@ -18,10 +18,12 @@ const doctorSchema = new mongoose.Schema({
 
   specialization: {
     type: String,
+    required: true,
   },
 
   department: {
     type: String,
+    required: true,
   },
 
   experienceYears: {
@@ -34,13 +36,13 @@ const doctorSchema = new mongoose.Schema({
 
   schedule: {
     workingDays: {
-      type: [String], // ["Monday", "Tuesday"]
+      type: [String], 
       required: true,
     },
 
     workingHours: {
-      start: String, // "09:00"
-      end: String,   // "17:00"
+      start: String, 
+      end: String,   
     },
 
     breakTime: {
@@ -49,7 +51,7 @@ const doctorSchema = new mongoose.Schema({
     },
 
     appointmentDuration: {
-      type: Number, // minutes
+      type: Number, 
       default: 30,
     }
   },
