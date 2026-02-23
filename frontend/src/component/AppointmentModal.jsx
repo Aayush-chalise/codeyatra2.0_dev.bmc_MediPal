@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import { X, Loader, AlertCircle, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userName: "",
     userEmail: "",
     userPhone: "",
     userAddress: "",
     appointmentDate: "",
+    appointmentTime: "",
     consultationType: "In-person",
+    symptoms: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,6 +21,13 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
   const [confirmationNumber, setConfirmationNumber] = useState("");
 
   const BACKEND_URL = "http://localhost:8080";
+
+  // Color palette
+  const colors = {
+    primary: "#006d77", // Dark teal
+    secondary: "#83c5be", // Light teal
+    light: "#edf6f9", // Very light blue
+  };
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
@@ -55,6 +66,14 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
       newErrors.appointmentDate = "Appointment date is required";
     }
 
+    if (!formData.appointmentTime) {
+      newErrors.appointmentTime = "Appointment time is required";
+    }
+
+    if (!formData.symptoms.trim()) {
+      newErrors.symptoms = "Please describe your symptoms";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -75,22 +94,22 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
   };
 
   const generateConfirmationNumber = () => {
-    return `APT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    return `APT-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)
+      .toUpperCase()}`;
   };
 
   // Send appointment data to backend
   const sendToBackend = async (appointmentData) => {
     try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/schedule/availableSlots`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(appointmentData),
+      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(appointmentData),
+      });
 
       if (!response.ok) {
         throw new Error(`Backend error: ${response.status}`);
@@ -156,14 +175,21 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
 
       // Send to backend
       const backendResponse = await sendToBackend(appointmentData);
+      console.log("Received from backend:", backendResponse);
 
       // Call the onSubmit callback (for updating chat/UI)
       await onSubmit(appointmentData);
 
       setSuccessMessage("Appointment booked successfully!");
 
-      // Reset form after successful submission
+      // Reset form after 1.5 seconds
       setTimeout(() => {
+        // Navigate to booking status page with appointment ID
+        navigate(`/booking/${appointmentData.appointmentId}`, {
+          state: { appointmentData },
+        });
+
+        // Close modal
         setFormData({
           userName: "",
           userEmail: "",
@@ -197,44 +223,84 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900 border border-blue-500/20 rounded-2xl shadow-2xl max-w-lg w-full my-8">
+      <div
+        className="border-2 rounded-2xl shadow-2xl max-w-lg w-full my-8"
+        style={{
+          backgroundColor: colors.light,
+          borderColor: colors.secondary,
+        }}
+      >
         {/* Modal Header */}
-        <div className="sticky top-0 flex items-center justify-between p-6 border-b border-blue-500/10 bg-gradient-to-r from-slate-800 to-blue-900">
-          <h2 className="text-2xl font-bold text-white">Book Appointment</h2>
+        <div
+          className="sticky top-0 flex items-center justify-between p-6 border-b-2"
+          style={{
+            backgroundColor: colors.primary,
+            borderColor: colors.secondary,
+            color: colors.light,
+          }}
+        >
+          <h2 className="text-2xl font-bold">Book Appointment</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-white/10 rounded-lg transition"
+            className="p-1 rounded-lg transition hover:opacity-80"
             disabled={isSubmitting}
+            style={{ color: colors.light }}
           >
-            <X className="w-6 h-6 text-gray-400 hover:text-white" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Modal Content */}
         <div className="p-6 space-y-6">
           {/* Doctor Info Card */}
-          <div className="bg-white/5 border border-blue-400/20 rounded-xl p-4 space-y-3">
+          <div
+            className="border-2 rounded-xl p-4 space-y-3"
+            style={{
+              backgroundColor: colors.light,
+              borderColor: colors.secondary,
+            }}
+          >
             <div className="flex items-start space-x-4">
               <div className="text-4xl">{doctor.image}</div>
               <div className="flex-1 space-y-1">
-                <h3 className="text-lg font-bold text-cyan-400">
+                <h3
+                  className="text-lg font-bold"
+                  style={{ color: colors.primary }}
+                >
                   {doctor.name}
                 </h3>
-                <p className="text-sm text-gray-400">{doctor.specialization}</p>
-                <p className="text-xs text-gray-500">
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: colors.secondary }}
+                >
+                  {doctor.specialization}
+                </p>
+                <p className="text-xs text-gray-600">
                   {doctor.department} • {doctor.experience} experience
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-cyan-400">{doctor.fee}</p>
-                <p className="text-xs text-gray-400">per consultation</p>
+                <p
+                  className="text-lg font-bold"
+                  style={{ color: colors.secondary }}
+                >
+                  {doctor.fee}
+                </p>
+                <p className="text-xs text-gray-600">per consultation</p>
               </div>
             </div>
           </div>
 
           {/* Success Message */}
           {successMessage && (
-            <div className="bg-green-500/20 border border-green-400/30 text-green-200 px-4 py-3 rounded-lg text-sm flex items-center space-x-2">
+            <div
+              className="border-2 px-4 py-3 rounded-lg text-sm flex items-center space-x-2"
+              style={{
+                backgroundColor: "rgba(34, 197, 94, 0.1)",
+                borderColor: "#22c55e",
+                color: "#16a34a",
+              }}
+            >
               <CheckCircle className="w-5 h-5" />
               <div>
                 <p className="font-semibold">✓ {successMessage}</p>
@@ -249,7 +315,14 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
 
           {/* Error Message */}
           {errors.submit && (
-            <div className="bg-red-500/20 border border-red-400/30 text-red-200 px-4 py-3 rounded-lg text-sm flex items-center space-x-2">
+            <div
+              className="border-2 px-4 py-3 rounded-lg text-sm flex items-center space-x-2"
+              style={{
+                backgroundColor: "rgba(220, 38, 38, 0.1)",
+                borderColor: "#dc2626",
+                color: "#991b1b",
+              }}
+            >
               <AlertCircle className="w-5 h-5" />
               <span>{errors.submit}</span>
             </div>
@@ -258,14 +331,23 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Section: Patient Information */}
-            <div className="border-b border-white/10 pb-4">
-              <h3 className="text-sm font-semibold text-cyan-300 mb-3">
+            <div
+              className="border-b-2 pb-4"
+              style={{ borderColor: colors.secondary }}
+            >
+              <h3
+                className="text-sm font-semibold mb-3"
+                style={{ color: colors.primary }}
+              >
                 📋 Patient Information
               </h3>
 
               {/* Full Name */}
               <div className="space-y-2 mb-3">
-                <label className="text-sm font-semibold text-gray-300">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
                   Full Name *
                 </label>
                 <input
@@ -274,21 +356,24 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                   value={formData.userName}
                   onChange={handleInputChange}
                   placeholder="Enter your full name"
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition ${
-                    errors.userName
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition"
+                  style={{
+                    borderColor: errors.userName ? "#dc2626" : colors.secondary,
+                    color: colors.primary,
+                  }}
                   disabled={isSubmitting}
                 />
                 {errors.userName && (
-                  <p className="text-xs text-red-400">{errors.userName}</p>
+                  <p className="text-xs text-red-600">{errors.userName}</p>
                 )}
               </div>
 
               {/* Email */}
               <div className="space-y-2 mb-3">
-                <label className="text-sm font-semibold text-gray-300">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
                   Email Address *
                 </label>
                 <input
@@ -297,21 +382,26 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                   value={formData.userEmail}
                   onChange={handleInputChange}
                   placeholder="Enter your email"
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition ${
-                    errors.userEmail
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition"
+                  style={{
+                    borderColor: errors.userEmail
+                      ? "#dc2626"
+                      : colors.secondary,
+                    color: colors.primary,
+                  }}
                   disabled={isSubmitting}
                 />
                 {errors.userEmail && (
-                  <p className="text-xs text-red-400">{errors.userEmail}</p>
+                  <p className="text-xs text-red-600">{errors.userEmail}</p>
                 )}
               </div>
 
               {/* Phone Number */}
               <div className="space-y-2 mb-3">
-                <label className="text-sm font-semibold text-gray-300">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
                   Phone Number *
                 </label>
                 <input
@@ -320,21 +410,26 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                   value={formData.userPhone}
                   onChange={handleInputChange}
                   placeholder="e.g., +977-9801234567"
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition ${
-                    errors.userPhone
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition"
+                  style={{
+                    borderColor: errors.userPhone
+                      ? "#dc2626"
+                      : colors.secondary,
+                    color: colors.primary,
+                  }}
                   disabled={isSubmitting}
                 />
                 {errors.userPhone && (
-                  <p className="text-xs text-red-400">{errors.userPhone}</p>
+                  <p className="text-xs text-red-600">{errors.userPhone}</p>
                 )}
               </div>
 
               {/* Address */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-300">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
                   Address *
                 </label>
                 <textarea
@@ -343,28 +438,39 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                   onChange={handleInputChange}
                   placeholder="Enter your full address"
                   rows="2"
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition resize-none ${
-                    errors.userAddress
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition resize-none"
+                  style={{
+                    borderColor: errors.userAddress
+                      ? "#dc2626"
+                      : colors.secondary,
+                    color: colors.primary,
+                  }}
                   disabled={isSubmitting}
                 />
                 {errors.userAddress && (
-                  <p className="text-xs text-red-400">{errors.userAddress}</p>
+                  <p className="text-xs text-red-600">{errors.userAddress}</p>
                 )}
               </div>
             </div>
 
             {/* Section: Appointment Information */}
-            <div className="border-b border-white/10 pb-4">
-              <h3 className="text-sm font-semibold text-cyan-300 mb-3">
+            <div
+              className="border-b-2 pb-4"
+              style={{ borderColor: colors.secondary }}
+            >
+              <h3
+                className="text-sm font-semibold mb-3"
+                style={{ color: colors.primary }}
+              >
                 📅 Appointment Details
               </h3>
 
               {/* Appointment Date */}
               <div className="space-y-2 mb-3">
-                <label className="text-sm font-semibold text-gray-300">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
                   Appointment Date *
                 </label>
                 <input
@@ -373,15 +479,17 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                   value={formData.appointmentDate}
                   onChange={handleInputChange}
                   min={minDate}
-                  className={`w-full px-4 py-3 bg-white/10 border rounded-lg text-white focus:outline-none focus:ring-2 transition ${
-                    errors.appointmentDate
-                      ? "border-red-400/50 focus:ring-red-400/20"
-                      : "border-blue-400/20 focus:border-cyan-400/50 focus:ring-cyan-400/20"
-                  }`}
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition"
+                  style={{
+                    borderColor: errors.appointmentDate
+                      ? "#dc2626"
+                      : colors.secondary,
+                    color: colors.primary,
+                  }}
                   disabled={isSubmitting}
                 />
                 {formData.appointmentDate && (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-600">
                     📅{" "}
                     {new Date(formData.appointmentDate).toLocaleDateString(
                       "en-US",
@@ -394,15 +502,52 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                   </p>
                 )}
                 {errors.appointmentDate && (
-                  <p className="text-xs text-red-400">
+                  <p className="text-xs text-red-600">
                     {errors.appointmentDate}
+                  </p>
+                )}
+              </div>
+
+              {/* Appointment Time */}
+              <div className="space-y-2 mb-3">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
+                  Appointment Time *
+                </label>
+                <input
+                  type="time"
+                  name="appointmentTime"
+                  value={formData.appointmentTime}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition"
+                  style={{
+                    borderColor: errors.appointmentTime
+                      ? "#dc2626"
+                      : colors.secondary,
+                    color: colors.primary,
+                  }}
+                  disabled={isSubmitting}
+                />
+                {formData.appointmentTime && (
+                  <p className="text-xs text-gray-600">
+                    🕐 {formData.appointmentTime}
+                  </p>
+                )}
+                {errors.appointmentTime && (
+                  <p className="text-xs text-red-600">
+                    {errors.appointmentTime}
                   </p>
                 )}
               </div>
 
               {/* Consultation Type */}
               <div className="space-y-2 mb-3">
-                <label className="text-sm font-semibold text-gray-300">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
                   Consultation Type
                 </label>
                 <div className="flex gap-4">
@@ -420,10 +565,41 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
                         disabled={isSubmitting}
                         className="w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-300">{type}</span>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: colors.primary }}
+                      >
+                        {type}
+                      </span>
                     </label>
                   ))}
                 </div>
+              </div>
+
+              {/* Symptoms */}
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: colors.primary }}
+                >
+                  Symptoms / Chief Complaint *
+                </label>
+                <textarea
+                  name="symptoms"
+                  value={formData.symptoms}
+                  onChange={handleInputChange}
+                  placeholder="Briefly describe your symptoms or reason for visit"
+                  rows="3"
+                  className="w-full px-4 py-3 bg-white border-2 rounded-lg focus:outline-none focus:ring-2 transition resize-none"
+                  style={{
+                    borderColor: errors.symptoms ? "#dc2626" : colors.secondary,
+                    color: colors.primary,
+                  }}
+                  disabled={isSubmitting}
+                />
+                {errors.symptoms && (
+                  <p className="text-xs text-red-600">{errors.symptoms}</p>
+                )}
               </div>
             </div>
 
@@ -432,14 +608,20 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-lg font-semibold text-white hover:bg-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-3 border-2 rounded-lg font-semibold transition hover:opacity-80"
+                style={{
+                  borderColor: colors.secondary,
+                  color: colors.primary,
+                  backgroundColor: "white",
+                }}
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ backgroundColor: colors.primary }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -454,7 +636,7 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
             </div>
           </form>
 
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-gray-600 text-center">
             By booking, you agree to our terms and conditions
           </p>
         </div>

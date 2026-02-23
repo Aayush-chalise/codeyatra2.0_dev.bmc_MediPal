@@ -41,6 +41,13 @@ const LandingPageWithDoctors = () => {
 
   const BACKEND_URL = "http://localhost:8080";
 
+  // Color palette
+  const colors = {
+    primary: "#006d77", // Dark teal
+    secondary: "#83c5be", // Light teal
+    light: "#edf6f9", // Very light blue
+  };
+
   const translations = {
     en: {
       title: "MediPal",
@@ -56,7 +63,7 @@ const LandingPageWithDoctors = () => {
 
   const t = translations[language];
 
-  // Doctor Database (same as before)
+  // Doctor Database
   const doctorsDatabase = [
     {
       id: 1,
@@ -291,9 +298,9 @@ const LandingPageWithDoctors = () => {
       if (analysis?.text) {
         botResponse = analysis.text;
       } else if (analysis?.isEmergency) {
-        botResponse = ` Your symptoms appear to be critical. Please **visit the Emergency Department immediately**.\n\nSuggested Department: **${analysis.department}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
+        botResponse = `⚠️ Your symptoms appear to be critical. Please **visit the Emergency Department immediately**.\n\nSuggested Department: **${analysis.department}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
       } else if (analysis) {
-        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.department}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
+        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.department}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\nCheck available doctors below to book an appointment!`;
         setSelectedDepartment(analysis.department);
       } else {
         botResponse = `I couldn't determine the exact department from your symptoms. Could you provide more details? For example: location of pain, duration, additional symptoms, etc.`;
@@ -356,39 +363,42 @@ const LandingPageWithDoctors = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-1/2 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
-
+    <div
+      className="min-h-screen text-gray-900 overflow-hidden"
+      style={{ backgroundColor: colors.light }}
+    >
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/70 border-b border-blue-500/10">
+      <nav
+        className="sticky top-0 z-50 shadow-md border-b"
+        style={{
+          backgroundColor: colors.primary,
+          borderColor: colors.secondary,
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-3 group cursor-pointer">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition">
-                <Heart className="w-6 h-6 text-white" />
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: colors.secondary }}
+              >
+                <Heart className="w-6 h-6" style={{ color: colors.primary }} />
               </div>
-              <div>
-                <h1 className="text-xl font-black bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                  {t.title}
-                </h1>
-                <p className="text-xs text-gray-400">{t.subtitle}</p>
+              <div style={{ color: colors.light }}>
+                <h1 className="text-xl font-black">{t.title}</h1>
+                <p className="text-xs opacity-80">{t.subtitle}</p>
               </div>
             </div>
 
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex items-center space-x-8">
               {t.nav.map((item) => (
                 <a
                   key={item}
                   href="#"
-                  className="px-4 py-2 text-gray-300 hover:text-cyan-400 transition relative group"
+                  className="font-medium transition hover:opacity-80"
+                  style={{ color: colors.light }}
                 >
                   {item}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-600 group-hover:w-full transition-all duration-300"></span>
                 </a>
               ))}
             </div>
@@ -397,7 +407,11 @@ const LandingPageWithDoctors = () => {
               {/* Reports Button */}
               <button
                 onClick={() => navigate("/reports")}
-                className="hidden md:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-purple-500/20 transition"
+                className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition hover:shadow-lg"
+                style={{
+                  backgroundColor: colors.secondary,
+                  color: colors.primary,
+                }}
               >
                 <FileText className="w-4 h-4" />
                 <span>Reports</span>
@@ -406,14 +420,20 @@ const LandingPageWithDoctors = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="px-3 py-2 bg-blue-500/20 border border-blue-400/30 rounded-lg text-xs text-gray-300 cursor-pointer hover:border-blue-400/50 transition"
+                className="px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition"
+                style={{
+                  backgroundColor: colors.secondary,
+                  color: colors.primary,
+                  border: `2px solid ${colors.secondary}`,
+                }}
               >
                 <option value="en">English</option>
                 <option value="ne">नेपाली</option>
               </select>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 hover:bg-blue-500/20 rounded-lg transition"
+                className="md:hidden p-2 rounded-lg transition"
+                style={{ color: colors.light }}
               >
                 {mobileMenuOpen ? <X /> : <Menu />}
               </button>
@@ -422,12 +442,16 @@ const LandingPageWithDoctors = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden pb-4 space-y-2">
+            <div
+              className="md:hidden pb-4 space-y-2 border-t"
+              style={{ borderColor: colors.secondary }}
+            >
               {t.nav.map((item) => (
                 <a
                   key={item}
                   href="#"
-                  className="block px-4 py-2 text-gray-300 hover:text-cyan-400 transition"
+                  className="block px-4 py-2 font-medium rounded transition"
+                  style={{ color: colors.light }}
                 >
                   {item}
                 </a>
@@ -437,7 +461,11 @@ const LandingPageWithDoctors = () => {
                   navigate("/reports");
                   setMobileMenuOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold text-white flex items-center space-x-2"
+                className="w-full text-left px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 transition"
+                style={{
+                  backgroundColor: colors.secondary,
+                  color: colors.primary,
+                }}
               >
                 <FileText className="w-4 h-4" />
                 <span>Reports</span>
@@ -449,42 +477,71 @@ const LandingPageWithDoctors = () => {
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-500/20 border border-red-400/30 text-red-200 px-4 py-3 mx-4 mt-4 rounded-lg flex items-center space-x-2">
+        <div
+          className="border px-4 py-3 mx-4 mt-4 rounded-lg flex items-center space-x-2"
+          style={{
+            backgroundColor: "rgba(220, 38, 38, 0.1)",
+            borderColor: "rgba(220, 38, 38, 0.3)",
+            color: "#dc2626",
+          }}
+        >
           <AlertCircle className="w-5 h-5" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10 relative">
-        <div className="grid lg:grid-cols-2 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid lg:grid-cols-2 gap-12">
           {/* Chatbot Section */}
-          <section className="relative z-10 flex flex-col">
+          <section className="flex flex-col">
             <div className="flex-1 flex flex-col">
               {/* Header */}
               <div className="text-center space-y-4 mb-8">
-                <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500/20 border border-blue-400/30 rounded-full">
-                  <Brain className="w-4 h-4 text-cyan-400" />
-                  <span className="text-sm text-cyan-300 font-medium">
+                <div
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border-2"
+                  style={{
+                    backgroundColor: `${colors.secondary}30`,
+                    borderColor: colors.secondary,
+                  }}
+                >
+                  <Brain
+                    className="w-4 h-4"
+                    style={{ color: colors.primary }}
+                  />
+                  <span
+                    className="text-sm font-medium"
+                    style={{ color: colors.primary }}
+                  >
                     AI Health Assistant
                   </span>
                 </div>
-                <h1 className="text-4xl sm:text-5xl font-black leading-tight">
+                <h1
+                  className="text-4xl sm:text-5xl font-black leading-tight"
+                  style={{ color: colors.primary }}
+                >
                   Your Personal Health{" "}
-                  <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
-                    Companion
-                  </span>
+                  <span style={{ color: colors.secondary }}>Companion</span>
                 </h1>
-                <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+                <p className="text-lg text-gray-700 max-w-2xl mx-auto">
                   Describe your symptoms and get instant AI-powered department
                   suggestions
                 </p>
               </div>
 
               {/* Chat Container */}
-              <div className="flex-1 flex flex-col bg-gradient-to-b from-blue-900/40 to-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden h-96 sm:h-[500px]">
+              <div
+                className="flex-1 flex flex-col border-2 rounded-2xl overflow-hidden h-96 sm:h-[500px] shadow-lg"
+                style={{
+                  borderColor: colors.primary,
+                  backgroundColor: "white",
+                }}
+              >
                 {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                <div
+                  className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
+                  style={{ backgroundColor: colors.light }}
+                >
                   {messages.map((message) => (
                     <div
                       key={message.id}
@@ -495,21 +552,35 @@ const LandingPageWithDoctors = () => {
                       }`}
                     >
                       <div
-                        className={`max-w-xs sm:max-w-md ${
+                        className={`max-w-xs sm:max-w-md rounded-2xl p-4 space-y-2 ${
                           message.type === "user"
-                            ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-2xl rounded-tr-none"
-                            : "bg-white/10 border border-white/20 text-gray-100 rounded-2xl rounded-tl-none"
-                        } p-4 space-y-2`}
+                            ? "rounded-tr-none"
+                            : "rounded-tl-none"
+                        }`}
+                        style={{
+                          backgroundColor:
+                            message.type === "user" ? colors.primary : "white",
+                          color:
+                            message.type === "user"
+                              ? colors.light
+                              : colors.primary,
+                          border:
+                            message.type === "user"
+                              ? "none"
+                              : `2px solid ${colors.primary}`,
+                        }}
                       >
                         <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                           {message.text}
                         </p>
                         <p
-                          className={`text-xs ${
-                            message.type === "user"
-                              ? "text-cyan-100"
-                              : "text-gray-400"
-                          }`}
+                          className="text-xs"
+                          style={{
+                            color:
+                              message.type === "user"
+                                ? colors.secondary
+                                : colors.secondary,
+                          }}
                         >
                           {message.timestamp.toLocaleTimeString([], {
                             hour: "2-digit",
@@ -522,9 +593,21 @@ const LandingPageWithDoctors = () => {
 
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-white/10 border border-white/20 rounded-2xl rounded-tl-none p-4 flex items-center space-x-2">
-                        <Loader className="w-5 h-5 text-cyan-400 animate-spin" />
-                        <span className="text-gray-400 text-sm">
+                      <div
+                        className="rounded-2xl rounded-tl-none p-4 flex items-center space-x-2 border-2"
+                        style={{
+                          borderColor: colors.primary,
+                          backgroundColor: "white",
+                        }}
+                      >
+                        <Loader
+                          className="w-5 h-5 animate-spin"
+                          style={{ color: colors.primary }}
+                        />
+                        <span
+                          style={{ color: colors.primary }}
+                          className="text-sm font-medium"
+                        >
                           Analyzing...
                         </span>
                       </div>
@@ -533,7 +616,13 @@ const LandingPageWithDoctors = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="border-t border-white/10 p-4 bg-gradient-to-t from-slate-900/50 to-transparent">
+                <div
+                  className="border-t-2 p-4"
+                  style={{
+                    borderColor: colors.primary,
+                    backgroundColor: "white",
+                  }}
+                >
                   <div className="flex items-end space-x-3">
                     <input
                       type="text"
@@ -546,30 +635,36 @@ const LandingPageWithDoctors = () => {
                         }
                       }}
                       placeholder="Describe your symptoms..."
-                      className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20 transition resize-none"
-                      rows="1"
+                      className="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition resize-none border-2"
+                      style={{
+                        borderColor: colors.secondary,
+                        color: colors.primary,
+                      }}
                       disabled={isLoading}
                     />
                     <button
                       onClick={handleSendMessage}
                       disabled={isLoading || !inputValue.trim()}
-                      className="px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      className="px-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      style={{ backgroundColor: colors.primary }}
                     >
                       <Send className="w-5 h-5" />
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs mt-2" style={{ color: colors.primary }}>
                     Disclaimer: This AI assistant provides suggestions based on
                     the symptoms you describe. It is not a substitute for
-                    professional medical advice. Always consult a healthcare
-                    provider for accurate diagnosis and treatment.
+                    professional medical advice.
                   </p>
                 </div>
               </div>
 
               {/* Example Prompts */}
               <div className="mt-6">
-                <p className="text-center text-xs text-gray-400 mb-3">
+                <p
+                  className="text-center text-xs font-medium mb-3"
+                  style={{ color: colors.primary }}
+                >
                   Try asking:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -584,7 +679,12 @@ const LandingPageWithDoctors = () => {
                       onClick={() => {
                         setInputValue(prompt);
                       }}
-                      className="px-3 py-2 bg-white/5 border border-white/10 hover:border-cyan-400/30 rounded-lg text-xs text-gray-300 hover:text-cyan-400 transition"
+                      className="px-3 py-2 rounded-lg text-xs font-medium transition hover:shadow-md border-2"
+                      style={{
+                        borderColor: colors.secondary,
+                        color: colors.primary,
+                        backgroundColor: "white",
+                      }}
                     >
                       "{prompt}"
                     </button>
@@ -595,20 +695,24 @@ const LandingPageWithDoctors = () => {
           </section>
 
           {/* Doctors List Section */}
-          <section className="relative z-10">
+          <section>
             {selectedDepartment ? (
               <div className="space-y-6">
                 {/* Header */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-6 h-6 text-cyan-400" />
-                    <h2 className="text-3xl font-black">
-                      <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                        {selectedDepartment}
-                      </span>
+                    <CheckCircle
+                      className="w-6 h-6"
+                      style={{ color: colors.primary }}
+                    />
+                    <h2
+                      className="text-3xl font-black"
+                      style={{ color: colors.primary }}
+                    >
+                      {selectedDepartment}
                     </h2>
                   </div>
-                  <p className="text-gray-400">
+                  <p style={{ color: colors.primary }} className="font-medium">
                     {filteredDoctors.length} available doctors in{" "}
                     {selectedDepartment}
                   </p>
@@ -619,78 +723,133 @@ const LandingPageWithDoctors = () => {
                   {filteredDoctors.map((doctor) => (
                     <div
                       key={doctor.id}
-                      className="bg-gradient-to-br from-blue-900/40 to-slate-900/40 backdrop-blur-xl border border-white/10 hover:border-cyan-400/30 rounded-2xl p-6 space-y-4 transition group"
+                      className="border-2 rounded-xl p-6 space-y-4 transition hover:shadow-lg"
+                      style={{
+                        borderColor: colors.secondary,
+                        backgroundColor: "white",
+                      }}
                     >
                       {/* Doctor Header */}
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-4">
                           <div className="text-4xl">{doctor.image}</div>
                           <div className="space-y-1">
-                            <h3 className="text-lg font-bold group-hover:text-cyan-400 transition">
+                            <h3
+                              className="text-lg font-bold"
+                              style={{ color: colors.primary }}
+                            >
                               {doctor.name}
                             </h3>
-                            <p className="text-sm text-cyan-300">
+                            <p
+                              className="text-sm font-medium"
+                              style={{ color: colors.secondary }}
+                            >
                               {doctor.specialization}
                             </p>
                             <div className="flex items-center space-x-1 mt-2">
-                              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                              <span className="text-sm font-semibold">
+                              <Star
+                                className="w-4 h-4"
+                                style={{ color: colors.secondary }}
+                                fill={colors.secondary}
+                              />
+                              <span
+                                className="text-sm font-semibold"
+                                style={{ color: colors.primary }}
+                              >
                                 {doctor.rating}
                               </span>
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-gray-500">
                                 ({doctor.reviews} reviews)
                               </span>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-cyan-400">
+                          <p
+                            className="text-lg font-bold"
+                            style={{ color: colors.secondary }}
+                          >
                             {doctor.fee}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-500">
                             per consultation
                           </p>
                         </div>
                       </div>
 
                       {/* Doctor Info */}
-                      <div className="grid grid-cols-2 gap-4 py-4 border-t border-white/10">
+                      <div
+                        className="grid grid-cols-2 gap-4 py-4 border-t-2"
+                        style={{ borderColor: colors.secondary }}
+                      >
                         <div className="space-y-1">
-                          <p className="text-xs text-gray-400 flex items-center space-x-1">
+                          <p
+                            className="text-xs font-semibold flex items-center space-x-1"
+                            style={{ color: colors.primary }}
+                          >
                             <Clock className="w-3 h-3" />
                             <span>Experience</span>
                           </p>
-                          <p className="text-sm font-semibold">
+                          <p
+                            className="text-sm font-semibold"
+                            style={{ color: colors.primary }}
+                          >
                             {doctor.experience}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xs text-gray-400 flex items-center space-x-1">
+                          <p
+                            className="text-xs font-semibold flex items-center space-x-1"
+                            style={{ color: colors.primary }}
+                          >
                             <CheckCircle className="w-3 h-3" />
                             <span>Availability</span>
                           </p>
-                          <p className="text-sm font-semibold text-green-400">
+                          <p
+                            className="text-sm font-semibold"
+                            style={{ color: colors.secondary }}
+                          >
                             {doctor.availability}
                           </p>
                         </div>
                       </div>
 
                       {/* Working Hours */}
-                      <div className="bg-white/5 border border-blue-400/20 rounded-lg p-3 text-xs text-gray-300 space-y-1">
-                        <p className="font-semibold text-blue-300">
-                          📋 Working Hours:
-                        </p>
+                      <div
+                        className="rounded-lg p-3 text-xs space-y-1 border-2"
+                        style={{
+                          backgroundColor: `${colors.secondary}20`,
+                          borderColor: colors.secondary,
+                          color: colors.primary,
+                        }}
+                      >
+                        <p className="font-semibold">📋 Working Hours:</p>
                         <p>{doctor.workingHours}</p>
                       </div>
 
                       {/* Contact & Type */}
-                      <div className="space-y-3 pt-4 border-t border-white/10">
-                        <div className="flex items-center space-x-2 text-sm text-gray-300">
-                          <MapPin className="w-4 h-4 text-cyan-400" />
+                      <div
+                        className="space-y-3 pt-4 border-t-2"
+                        style={{ borderColor: colors.secondary }}
+                      >
+                        <div
+                          className="flex items-center space-x-2 text-sm"
+                          style={{ color: colors.primary }}
+                        >
+                          <MapPin
+                            className="w-4 h-4"
+                            style={{ color: colors.secondary }}
+                          />
                           <span>{doctor.address}</span>
                         </div>
-                        <div className="flex items-center space-x-2 text-sm text-gray-300">
-                          <Phone className="w-4 h-4 text-cyan-400" />
+                        <div
+                          className="flex items-center space-x-2 text-sm"
+                          style={{ color: colors.primary }}
+                        >
+                          <Phone
+                            className="w-4 h-4"
+                            style={{ color: colors.secondary }}
+                          />
                           <span>{doctor.phone}</span>
                         </div>
 
@@ -699,11 +858,12 @@ const LandingPageWithDoctors = () => {
                           {doctor.consultationType.map((type) => (
                             <span
                               key={type}
-                              className={`text-xs px-3 py-1 rounded-full font-semibold flex items-center space-x-1 ${
-                                type === "Video Call"
-                                  ? "bg-purple-500/20 text-purple-300 border border-purple-400/30"
-                                  : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
-                              }`}
+                              className="text-xs px-3 py-1 rounded-full font-semibold flex items-center space-x-1 border-2"
+                              style={{
+                                backgroundColor: `${colors.secondary}20`,
+                                borderColor: colors.secondary,
+                                color: colors.primary,
+                              }}
                             >
                               {type === "Video Call" ? (
                                 <Video className="w-3 h-3" />
@@ -719,7 +879,8 @@ const LandingPageWithDoctors = () => {
                       {/* Book Button */}
                       <button
                         onClick={() => handleBookAppointment(doctor)}
-                        className="w-full mt-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/20 transition"
+                        className="w-full mt-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition"
+                        style={{ backgroundColor: colors.primary }}
                       >
                         Book Appointment
                       </button>
@@ -729,11 +890,22 @@ const LandingPageWithDoctors = () => {
               </div>
             ) : (
               /* Placeholder when no department is selected */
-              <div className="h-96 sm:h-[500px] flex flex-col items-center justify-center bg-gradient-to-br from-blue-900/40 to-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl space-y-6">
+              <div
+                className="h-96 sm:h-[500px] flex flex-col items-center justify-center border-2 rounded-xl space-y-6"
+                style={{
+                  borderColor: colors.secondary,
+                  backgroundColor: colors.light,
+                }}
+              >
                 <div className="text-6xl">👨‍⚕️</div>
                 <div className="text-center space-y-2">
-                  <h3 className="text-xl font-bold">No Department Selected</h3>
-                  <p className="text-gray-400 max-w-sm">
+                  <h3
+                    className="text-xl font-bold"
+                    style={{ color: colors.primary }}
+                  >
+                    No Department Selected
+                  </h3>
+                  <p className="text-gray-600 max-w-sm">
                     Describe your symptoms in the chatbot to get AI-powered
                     department suggestions and see available doctors
                   </p>
@@ -756,27 +928,6 @@ const LandingPageWithDoctors = () => {
       />
 
       <style jsx>{`
-        @keyframes blob {
-          0%,
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
