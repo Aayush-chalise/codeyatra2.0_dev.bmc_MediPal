@@ -26,7 +26,7 @@ const LandingPageWithDoctors = () => {
     {
       id: 1,
       type: "bot",
-      text: "Hi! I am MediPal, your AI health assistant. Tell me about your symptoms, and I will suggest the right department and urgency level.",
+      text: "Hi! I am MediPal, your AI health assistant. Tell me about your symptoms, and I will suggest the right department and doctors for you!",
       timestamp: new Date(),
     },
   ]);
@@ -291,10 +291,10 @@ const LandingPageWithDoctors = () => {
       if (analysis?.text) {
         botResponse = analysis.text;
       } else if (analysis?.isEmergency) {
-        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately**.\n\nSuggested Department: **${analysis.dept}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
+        botResponse = `🚨 **EMERGENCY DETECTED**\n\nYour symptoms appear to be critical. Please **visit the Emergency Department immediately**.\n\nSuggested Department: **${analysis.department}**\nUrgency: **${analysis.urgency}**\nAction Required: **${analysis.time}**`;
       } else if (analysis) {
-        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.dept}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
-        setSelectedDepartment(analysis.dept);
+        botResponse = `✅ Analysis Complete\n\n**Suggested Department:** ${analysis.department}\n**Urgency Level:** ${analysis.urgency}\n**Recommended Time:** ${analysis.time}\n\n👇 Check available doctors below to book an appointment!`;
+        setSelectedDepartment(analysis.department);
       } else {
         botResponse = `I couldn't determine the exact department from your symptoms. Could you provide more details? For example: location of pain, duration, additional symptoms, etc.`;
       }
@@ -559,7 +559,10 @@ const LandingPageWithDoctors = () => {
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Press Enter to send
+                    Disclaimer: This AI assistant provides suggestions based on
+                    the symptoms you describe. It is not a substitute for
+                    professional medical advice. Always consult a healthcare
+                    provider for accurate diagnosis and treatment.
                   </p>
                 </div>
               </div>
