@@ -1,16 +1,17 @@
 import express from 'express';
 import dotenv from 'dotenv';
-// import cors from 'cors';
+import cors from 'cors';
 import { connectDB } from './config/db.js';
 import appointmentRoutes from './routes/appointment.route.js';
 import geminiRoutes from './routes/gemini.route.js';
+import fileRoutes from './routes/file.route.js';
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-// app.use(cors());
+app.use(cors());
 app.use(express.json());
 
 // Connect to Database
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 app.use("/api", geminiRoutes);
 
 // Routes
+app.use('/file', fileRoutes);
 app.use('/', appointmentRoutes);
 
 const PORT = process.env.PORT || 3000;
