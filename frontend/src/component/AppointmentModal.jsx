@@ -81,13 +81,16 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
   // Send appointment data to backend
   const sendToBackend = async (appointmentData) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${BACKEND_URL}/api/schedule/availableSlots`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(appointmentData),
         },
-        body: JSON.stringify(appointmentData),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Backend error: ${response.status}`);
