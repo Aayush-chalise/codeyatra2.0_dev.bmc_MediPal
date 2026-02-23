@@ -35,33 +35,33 @@ const doctorSchema = new mongoose.Schema({
   },
 
   schedule: {
-    workingDays: {
-      type: [String], 
-      required: true,
+        workingDays: {
+          type: [String], 
+          required: true,
+        },
+
+        workingHours: {
+          start: String, 
+          end: String,   
+        },
+
+        breakTime: {
+          start: String,
+          end: String,
+        },
+
+        appointmentDuration: {
+          type: Number, 
+          default: 30,
+        }
     },
 
-    workingHours: {
-      start: String, 
-      end: String,   
-    },
-
-    breakTime: {
-      start: String,
-      end: String,
-    },
-
-    appointmentDuration: {
-      type: Number, 
-      default: 30,
-    }
-  },
-
-  bookedSlots: [
-    {
-      date: String,
-      time: String,
-      bookedAt: Date,
-    }
+      bookedSlots: [
+        {
+          date: String,
+          time: String,
+          bookedAt: Date,
+        }
   ],
 
   isActive: {
