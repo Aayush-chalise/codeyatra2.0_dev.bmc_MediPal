@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Menu,
   X,
@@ -39,13 +39,17 @@ const LandingPageWithDoctors = () => {
   const [selectedDoctorForBooking, setSelectedDoctorForBooking] =
     useState(null);
 
+  // Doctor data state
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
+  const [doctorsError, setDoctorsError] = useState(null);
+
   const BACKEND_URL = "http://localhost:8080";
 
-  // Color palette
   const colors = {
-    primary: "#006d77", // Dark teal
-    secondary: "#83c5be", // Light teal
-    light: "#edf6f9", // Very light blue
+    primary: "#006d77",
+    secondary: "#83c5be",
+    light: "#edf6f9",
   };
 
   const translations = {
@@ -63,145 +67,41 @@ const LandingPageWithDoctors = () => {
 
   const t = translations[language];
 
-  // Doctor Database
-  const doctorsDatabase = [
-    {
-      id: 1,
-      name: "Dr. Rajesh Kumar",
-      department: "Cardiology",
-      specialization: "Heart & Cardio Diseases",
-      rating: 4.8,
-      reviews: 245,
-      experience: "15 years",
-      fee: "NPR 1000",
-      availability: "Available Today",
-      image: "👨‍⚕️",
-      phone: "+977-1-4123456",
-      address: "Central Hospital, Kathmandu",
-      email: "rajesh@hospital.com",
-      consultationType: ["In-person", "Video Call"],
-      workingHours: "9:00 AM - 5:00 PM",
-    },
-    {
-      id: 2,
-      name: "Dr. Priya Sharma",
-      department: "Cardiology",
-      specialization: "Cardiologist & Arrhythmia",
-      rating: 4.9,
-      reviews: 312,
-      experience: "12 years",
-      fee: "NPR 1100",
-      availability: "Available Today",
-      image: "👩‍⚕️",
-      phone: "+977-1-4234567",
-      address: "City Medical Center, Kathmandu",
-      email: "priya@hospital.com",
-      consultationType: ["Video Call", "In-person"],
-      workingHours: "10:00 AM - 6:00 PM",
-    },
-    {
-      id: 3,
-      name: "Dr. Amit Singh",
-      department: "Emergency",
-      specialization: "Interventional Cardiology",
-      rating: 4.7,
-      reviews: 189,
-      experience: "18 years",
-      fee: "NPR 1300",
-      availability: "Available Tomorrow",
-      image: "👨‍⚕️",
-      phone: "+977-1-4345678",
-      address: "Health Plus Hospital, Kathmandu",
-      email: "amit@hospital.com",
-      consultationType: ["In-person"],
-      workingHours: "8:00 AM - 8:00 PM",
-    },
-    {
-      id: 4,
-      name: "Dr. Neha Patel",
-      department: "Pulmonology",
-      specialization: "Respiratory Diseases",
-      rating: 4.6,
-      reviews: 156,
-      experience: "10 years",
-      fee: "NPR 900",
-      availability: "Available Today",
-      image: "👩‍⚕️",
-      phone: "+977-1-4456789",
-      address: "Respiratory Center, Kathmandu",
-      email: "neha@hospital.com",
-      consultationType: ["Video Call", "In-person"],
-      workingHours: "9:00 AM - 5:00 PM",
-    },
-    {
-      id: 5,
-      name: "Dr. Vikram Desai",
-      department: "Neurology",
-      specialization: "Neurologist & Headaches",
-      rating: 4.8,
-      reviews: 267,
-      experience: "14 years",
-      fee: "NPR 1000",
-      availability: "Available Today",
-      image: "👨‍⚕️",
-      phone: "+977-1-4567890",
-      address: "Neuro Care Clinic, Kathmandu",
-      email: "vikram@hospital.com",
-      consultationType: ["In-person", "Video Call"],
-      workingHours: "9:00 AM - 5:00 PM",
-    },
-    {
-      id: 6,
-      name: "Dr. Anisha Roy",
-      department: "Orthopedics",
-      specialization: "Orthopedic Surgeon",
-      rating: 4.9,
-      reviews: 298,
-      experience: "16 years",
-      fee: "NPR 1200",
-      availability: "Available Today",
-      image: "👩‍⚕️",
-      phone: "+977-1-4678901",
-      address: "Bone & Joint Center, Kathmandu",
-      email: "anisha@hospital.com",
-      consultationType: ["In-person"],
-      workingHours: "9:00 AM - 5:00 PM",
-    },
-    {
-      id: 7,
-      name: "Dr. Sameer Malhotra",
-      department: "General Medicine",
-      specialization: "General Practitioner",
-      rating: 4.5,
-      reviews: 421,
-      experience: "20 years",
-      fee: "NPR 700",
-      availability: "Available Today",
-      image: "👨‍⚕️",
-      phone: "+977-1-4789012",
-      address: "General Health Clinic, Kathmandu",
-      email: "sameer@hospital.com",
-      consultationType: ["Video Call", "In-person"],
-      workingHours: "8:00 AM - 6:00 PM",
-    },
-    {
-      id: 8,
-      name: "Dr. Divya Gupta",
-      department: "General Medicine",
-      specialization: "Internal Medicine",
-      rating: 4.7,
-      reviews: 334,
-      experience: "13 years",
-      fee: "NPR 800",
-      availability: "Available Today",
-      image: "👩‍⚕️",
-      phone: "+977-1-4890123",
-      address: "Medical Excellence, Kathmandu",
-      email: "divya@hospital.com",
-      consultationType: ["Video Call", "In-person"],
-      workingHours: "9:00 AM - 5:00 PM",
-    },
-  ];
+  // ─── Fetch doctors from backend whenever department changes ───────────────────
+  useEffect(() => {
+    if (!selectedDepartment) {
+      setDoctors([]);
+      return;
+    }
+
+    const fetchDoctors = async () => {
+      setDoctorsLoading(true);
+      setDoctorsError(null);
+      setDoctors([]);
+
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/api/doctors?department=${encodeURIComponent(selectedDepartment)}`,
+        );
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // Support both { doctors: [...] } and plain array responses
+        setDoctors(Array.isArray(data) ? data : (data.doctors ?? []));
+      } catch (err) {
+        console.error("Failed to fetch doctors:", err);
+        setDoctorsError("Could not load doctors. Please try again.");
+      } finally {
+        setDoctorsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, [selectedDepartment]);
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const symptomKeywords = {
     "chest pain": { dept: "Cardiology", urgency: "High", time: "Today" },
@@ -222,7 +122,6 @@ const LandingPageWithDoctors = () => {
 
   const analyzeSymptom = (symptomText) => {
     const lowerText = symptomText.toLowerCase();
-
     for (const keyword of ["bleeding", "unconscious", "attack", "severe"]) {
       if (lowerText.includes(keyword)) {
         return {
@@ -233,13 +132,11 @@ const LandingPageWithDoctors = () => {
         };
       }
     }
-
     for (const [keyword, suggestion] of Object.entries(symptomKeywords)) {
       if (lowerText.includes(keyword)) {
         return { ...suggestion, isEmergency: false };
       }
     }
-
     return null;
   };
 
@@ -247,23 +144,11 @@ const LandingPageWithDoctors = () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/symptoms/analyze`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          symptom: symptomText,
-          timestamp: new Date().toISOString(),
-          language: language,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symptom: symptomText }),
       });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
       const data = await response.json();
-      console.log("Backend Response:", data);
-
       return data;
     } catch (err) {
       console.error("Error sending to backend:", err);
@@ -290,9 +175,7 @@ const LandingPageWithDoctors = () => {
 
     try {
       const backendResponse = await sendToBackend(symptomText);
-
       let analysis = backendResponse?.analysis || analyzeSymptom(symptomText);
-
       let botResponse = "";
 
       if (analysis?.text) {
@@ -306,14 +189,15 @@ const LandingPageWithDoctors = () => {
         botResponse = `I couldn't determine the exact department from your symptoms. Could you provide more details? For example: location of pain, duration, additional symptoms, etc.`;
       }
 
-      const botMessage = {
-        id: messages.length + 2,
-        type: "bot",
-        text: botResponse,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 2,
+          type: "bot",
+          text: botResponse,
+          timestamp: new Date(),
+        },
+      ]);
     } catch (err) {
       console.error("Error in handleSendMessage:", err);
       setError("An error occurred while processing your request.");
@@ -331,36 +215,27 @@ const LandingPageWithDoctors = () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(appointmentData),
       });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
       const data = await response.json();
       console.log("Appointment booked successfully:", data);
 
-      const botMessage = {
-        id: messages.length + 1,
-        type: "bot",
-        text: `✅ Appointment Confirmed!\n\nYour appointment with ${appointmentData.doctorName} has been booked successfully.\n\nDate: ${appointmentData.appointmentDate}\nTime: ${appointmentData.appointmentTime}\nConfirmation: ${appointmentData.confirmationNumber}\n\nConfirmation details have been sent to ${appointmentData.userEmail}.\n\nWe look forward to seeing you!`,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: `✅ Appointment Confirmed!\n\nYour appointment with ${appointmentData.doctorName} has been booked successfully.\n\nDate: ${appointmentData.appointmentDate}\nTime: ${appointmentData.appointmentTime}\nConfirmation: ${appointmentData.confirmationNumber}\n\nConfirmation details have been sent to ${appointmentData.userEmail}.\n\nWe look forward to seeing you!`,
+          timestamp: new Date(),
+        },
+      ]);
     } catch (err) {
       console.error("Error booking appointment:", err);
       throw err;
     }
   };
-
-  const filteredDoctors = selectedDepartment
-    ? doctorsDatabase.filter((doc) => doc.department === selectedDepartment)
-    : [];
 
   return (
     <div
@@ -404,7 +279,6 @@ const LandingPageWithDoctors = () => {
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Reports Button */}
               <button
                 onClick={() => navigate("/reports")}
                 className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition hover:shadow-lg"
@@ -415,6 +289,16 @@ const LandingPageWithDoctors = () => {
               >
                 <FileText className="w-4 h-4" />
                 <span>Reports</span>
+              </button>
+              <button
+                onClick={() => navigate("/auth")}
+                className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold transition hover:shadow-lg"
+                style={{
+                  backgroundColor: colors.secondary,
+                  color: colors.primary,
+                }}
+              >
+                <span>Login</span>
               </button>
 
               <select
@@ -440,7 +324,6 @@ const LandingPageWithDoctors = () => {
             </div>
           </div>
 
-          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div
               className="md:hidden pb-4 space-y-2 border-t"
@@ -496,7 +379,6 @@ const LandingPageWithDoctors = () => {
           {/* Chatbot Section */}
           <section className="flex flex-col">
             <div className="flex-1 flex flex-col">
-              {/* Header */}
               <div className="text-center space-y-4 mb-8">
                 <div
                   className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border-2"
@@ -529,7 +411,6 @@ const LandingPageWithDoctors = () => {
                 </p>
               </div>
 
-              {/* Chat Container */}
               <div
                 className="flex-1 flex flex-col border-2 rounded-2xl overflow-hidden h-96 sm:h-[500px] shadow-lg"
                 style={{
@@ -537,7 +418,6 @@ const LandingPageWithDoctors = () => {
                   backgroundColor: "white",
                 }}
               >
-                {/* Messages Area */}
                 <div
                   className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
                   style={{ backgroundColor: colors.light }}
@@ -545,18 +425,10 @@ const LandingPageWithDoctors = () => {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${
-                        message.type === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
+                      className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-xs sm:max-w-md rounded-2xl p-4 space-y-2 ${
-                          message.type === "user"
-                            ? "rounded-tr-none"
-                            : "rounded-tl-none"
-                        }`}
+                        className={`max-w-xs sm:max-w-md rounded-2xl p-4 space-y-2 ${message.type === "user" ? "rounded-tr-none" : "rounded-tl-none"}`}
                         style={{
                           backgroundColor:
                             message.type === "user" ? colors.primary : "white",
@@ -575,12 +447,7 @@ const LandingPageWithDoctors = () => {
                         </p>
                         <p
                           className="text-xs"
-                          style={{
-                            color:
-                              message.type === "user"
-                                ? colors.secondary
-                                : colors.secondary,
-                          }}
+                          style={{ color: colors.secondary }}
                         >
                           {message.timestamp.toLocaleTimeString([], {
                             hour: "2-digit",
@@ -615,7 +482,6 @@ const LandingPageWithDoctors = () => {
                   )}
                 </div>
 
-                {/* Input Area */}
                 <div
                   className="border-t-2 p-4"
                   style={{
@@ -645,7 +511,7 @@ const LandingPageWithDoctors = () => {
                     <button
                       onClick={handleSendMessage}
                       disabled={isLoading || !inputValue.trim()}
-                      className="px-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      className="px-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: colors.primary }}
                     >
                       <Send className="w-5 h-5" />
@@ -659,7 +525,6 @@ const LandingPageWithDoctors = () => {
                 </div>
               </div>
 
-              {/* Example Prompts */}
               <div className="mt-6">
                 <p
                   className="text-center text-xs font-medium mb-3"
@@ -676,9 +541,7 @@ const LandingPageWithDoctors = () => {
                   ].map((prompt, idx) => (
                     <button
                       key={idx}
-                      onClick={() => {
-                        setInputValue(prompt);
-                      }}
+                      onClick={() => setInputValue(prompt)}
                       className="px-3 py-2 rounded-lg text-xs font-medium transition hover:shadow-md border-2"
                       style={{
                         borderColor: colors.secondary,
@@ -694,11 +557,10 @@ const LandingPageWithDoctors = () => {
             </div>
           </section>
 
-          {/* Doctors List Section */}
+          {/* Doctors Section */}
           <section>
             {selectedDepartment ? (
               <div className="space-y-6">
-                {/* Header */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <CheckCircle
@@ -712,184 +574,226 @@ const LandingPageWithDoctors = () => {
                       {selectedDepartment}
                     </h2>
                   </div>
-                  <p style={{ color: colors.primary }} className="font-medium">
-                    {filteredDoctors.length} available doctors in{" "}
-                    {selectedDepartment}
-                  </p>
+                  {!doctorsLoading && !doctorsError && (
+                    <p
+                      style={{ color: colors.primary }}
+                      className="font-medium"
+                    >
+                      {doctors.length} available doctor
+                      {doctors.length !== 1 ? "s" : ""} in {selectedDepartment}
+                    </p>
+                  )}
                 </div>
 
-                {/* Doctors List */}
-                <div className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-hide">
-                  {filteredDoctors.map((doctor) => (
-                    <div
-                      key={doctor.id}
-                      className="border-2 rounded-xl p-6 space-y-4 transition hover:shadow-lg"
-                      style={{
-                        borderColor: colors.secondary,
-                        backgroundColor: "white",
-                      }}
+                {/* Loading state */}
+                {doctorsLoading && (
+                  <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                    <Loader
+                      className="w-10 h-10 animate-spin"
+                      style={{ color: colors.primary }}
+                    />
+                    <p
+                      className="font-medium"
+                      style={{ color: colors.primary }}
                     >
-                      {/* Doctor Header */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-4">
-                          <div className="text-4xl">{doctor.image}</div>
-                          <div className="space-y-1">
-                            <h3
-                              className="text-lg font-bold"
-                              style={{ color: colors.primary }}
-                            >
-                              {doctor.name}
-                            </h3>
-                            <p
-                              className="text-sm font-medium"
-                              style={{ color: colors.secondary }}
-                            >
-                              {doctor.specialization}
-                            </p>
-                            <div className="flex items-center space-x-1 mt-2">
-                              <Star
-                                className="w-4 h-4"
-                                style={{ color: colors.secondary }}
-                                fill={colors.secondary}
-                              />
-                              <span
-                                className="text-sm font-semibold"
-                                style={{ color: colors.primary }}
-                              >
-                                {doctor.rating}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                ({doctor.reviews} reviews)
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p
-                            className="text-lg font-bold"
-                            style={{ color: colors.secondary }}
-                          >
-                            {doctor.fee}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            per consultation
-                          </p>
-                        </div>
-                      </div>
+                      Loading doctors...
+                    </p>
+                  </div>
+                )}
 
-                      {/* Doctor Info */}
-                      <div
-                        className="grid grid-cols-2 gap-4 py-4 border-t-2"
-                        style={{ borderColor: colors.secondary }}
-                      >
-                        <div className="space-y-1">
-                          <p
-                            className="text-xs font-semibold flex items-center space-x-1"
-                            style={{ color: colors.primary }}
-                          >
-                            <Clock className="w-3 h-3" />
-                            <span>Experience</span>
-                          </p>
-                          <p
-                            className="text-sm font-semibold"
-                            style={{ color: colors.primary }}
-                          >
-                            {doctor.experience}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p
-                            className="text-xs font-semibold flex items-center space-x-1"
-                            style={{ color: colors.primary }}
-                          >
-                            <CheckCircle className="w-3 h-3" />
-                            <span>Availability</span>
-                          </p>
-                          <p
-                            className="text-sm font-semibold"
-                            style={{ color: colors.secondary }}
-                          >
-                            {doctor.availability}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Working Hours */}
-                      <div
-                        className="rounded-lg p-3 text-xs space-y-1 border-2"
-                        style={{
-                          backgroundColor: `${colors.secondary}20`,
-                          borderColor: colors.secondary,
-                          color: colors.primary,
-                        }}
-                      >
-                        <p className="font-semibold">📋 Working Hours:</p>
-                        <p>{doctor.workingHours}</p>
-                      </div>
-
-                      {/* Contact & Type */}
-                      <div
-                        className="space-y-3 pt-4 border-t-2"
-                        style={{ borderColor: colors.secondary }}
-                      >
-                        <div
-                          className="flex items-center space-x-2 text-sm"
-                          style={{ color: colors.primary }}
-                        >
-                          <MapPin
-                            className="w-4 h-4"
-                            style={{ color: colors.secondary }}
-                          />
-                          <span>{doctor.address}</span>
-                        </div>
-                        <div
-                          className="flex items-center space-x-2 text-sm"
-                          style={{ color: colors.primary }}
-                        >
-                          <Phone
-                            className="w-4 h-4"
-                            style={{ color: colors.secondary }}
-                          />
-                          <span>{doctor.phone}</span>
-                        </div>
-
-                        {/* Consultation Types */}
-                        <div className="flex gap-2 pt-2">
-                          {doctor.consultationType.map((type) => (
-                            <span
-                              key={type}
-                              className="text-xs px-3 py-1 rounded-full font-semibold flex items-center space-x-1 border-2"
-                              style={{
-                                backgroundColor: `${colors.secondary}20`,
-                                borderColor: colors.secondary,
-                                color: colors.primary,
-                              }}
-                            >
-                              {type === "Video Call" ? (
-                                <Video className="w-3 h-3" />
-                              ) : (
-                                <Clock className="w-3 h-3" />
-                              )}
-                              <span>{type}</span>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Book Button */}
+                {/* Error state */}
+                {doctorsError && !doctorsLoading && (
+                  <div
+                    className="border-2 rounded-xl p-6 flex items-center space-x-3"
+                    style={{
+                      borderColor: "#dc2626",
+                      backgroundColor: "rgba(220,38,38,0.05)",
+                      color: "#dc2626",
+                    }}
+                  >
+                    <AlertCircle className="w-6 h-6 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Failed to load doctors</p>
+                      <p className="text-sm mt-1">{doctorsError}</p>
                       <button
-                        onClick={() => handleBookAppointment(doctor)}
-                        className="w-full mt-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition"
-                        style={{ backgroundColor: colors.primary }}
+                        onClick={() => setSelectedDepartment((d) => d)}
+                        className="mt-3 text-sm font-semibold underline"
                       >
-                        Book Appointment
+                        Retry
                       </button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!doctorsLoading && !doctorsError && doctors.length === 0 && (
+                  <div
+                    className="border-2 rounded-xl p-10 text-center space-y-3"
+                    style={{
+                      borderColor: colors.secondary,
+                      backgroundColor: colors.light,
+                    }}
+                  >
+                    <div className="text-5xl">🔍</div>
+                    <p
+                      className="font-semibold text-lg"
+                      style={{ color: colors.primary }}
+                    >
+                      No doctors found
+                    </p>
+                    <p className="text-gray-600 text-sm">
+                      There are currently no available doctors in the{" "}
+                      {selectedDepartment} department.
+                    </p>
+                  </div>
+                )}
+
+                {/* Doctors list */}
+                {!doctorsLoading && !doctorsError && doctors.length > 0 && (
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-hide">
+                    {doctors.map((doctor) => (
+                      <div
+                        key={doctor._id}
+                        className="border-2 rounded-xl p-6 space-y-4 transition hover:shadow-lg"
+                        style={{
+                          borderColor: colors.secondary,
+                          backgroundColor: "white",
+                        }}
+                      >
+                        {/* Doctor Header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4">
+                            <div className="text-4xl">
+                              {doctor.image ?? "👨‍⚕️"}
+                            </div>
+                            <div className="space-y-1">
+                              <h3
+                                className="text-lg font-bold"
+                                style={{ color: colors.primary }}
+                              >
+                                {doctor.name}
+                              </h3>
+                              <p
+                                className="text-sm font-medium"
+                                style={{ color: colors.secondary }}
+                              >
+                                {doctor.specialization}
+                              </p>
+                              {/* <div className="flex items-center space-x-1 mt-2">
+                                <Star
+                                  className="w-4 h-4"
+                                  style={{ color: colors.secondary }}
+                                  fill={colors.secondary}
+                                />
+                              </div> */}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p
+                              className="text-lg font-bold"
+                              style={{ color: colors.secondary }}
+                            >
+                              NPR: {doctor.consultationFee}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              per consultation
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Doctor Info Grid */}
+                        <div
+                          className="grid grid-cols-2 gap-4 py-4 border-t-2"
+                          style={{ borderColor: colors.secondary }}
+                        >
+                          <div className="space-y-1">
+                            <p
+                              className="text-xs font-semibold flex items-center space-x-1"
+                              style={{ color: colors.primary }}
+                            >
+                              <Clock className="w-3 h-3" />
+                              <span>Experience</span>
+                            </p>
+                            <p
+                              className="text-sm font-semibold"
+                              style={{ color: colors.primary }}
+                            >
+                              {doctor.experienceYears}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p
+                              className="text-xs font-semibold flex items-center space-x-1"
+                              style={{ color: colors.primary }}
+                            >
+                              <CheckCircle className="w-3 h-3" />
+                              <span>Availability</span>
+                            </p>
+                            <p
+                              className="text-sm font-semibold"
+                              style={{ color: colors.secondary }}
+                            >
+                              True
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Working Hours */}
+                        <div
+                          className="rounded-lg p-3 text-xs space-y-1 border-2"
+                          style={{
+                            backgroundColor: `${colors.secondary}20`,
+                            borderColor: colors.secondary,
+                            color: colors.primary,
+                          }}
+                        >
+                          <p className="font-semibold">📋 Working Hours:</p>
+                          <p>
+                            {doctor.schedule.workingHours.start}-
+                            {doctor.schedule.workingHours.end}
+                          </p>
+                        </div>
+
+                        {/* Contact */}
+                        <div
+                          className="space-y-3 pt-4 border-t-2"
+                          style={{ borderColor: colors.secondary }}
+                        >
+                          {/* <div
+                            className="flex items-center space-x-2 text-sm"
+                            style={{ color: colors.primary }}
+                           >
+                            <MapPin
+                              className="w-4 h-4"
+                              style={{ color: colors.secondary }}
+                            />
+                            <span>{doctor.address}</span>
+                          </div> */}
+                          <div
+                            className="flex items-center space-x-2 text-sm"
+                            style={{ color: colors.primary }}
+                          >
+                            <Phone
+                              className="w-4 h-4"
+                              style={{ color: colors.secondary }}
+                            />
+                            <span>{doctor.phone}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleBookAppointment(doctor)}
+                          className="w-full mt-4 py-3 rounded-lg font-semibold text-white hover:shadow-lg transition"
+                          style={{ backgroundColor: colors.primary }}
+                        >
+                          Book Appointment
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
-              /* Placeholder when no department is selected */
               <div
                 className="h-96 sm:h-[500px] flex flex-col items-center justify-center border-2 rounded-xl space-y-6"
                 style={{
@@ -916,7 +820,6 @@ const LandingPageWithDoctors = () => {
         </div>
       </div>
 
-      {/* Appointment Modal */}
       <AppointmentModal
         doctor={selectedDoctorForBooking}
         isOpen={isModalOpen}

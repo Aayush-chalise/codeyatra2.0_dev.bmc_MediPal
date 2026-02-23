@@ -27,3 +27,16 @@ export const createDoctor = async (req, res) => {
         res.status(500).json({ message: "Failed to create doctor" });
     }
 }
+
+export const getDoctors = async (req, res) => {
+    try {
+        if (!req.query.department) {
+            return res.status(400).json({ message: "Department query parameter is required" });
+        }   
+        const doctors = await Doctor.find({ department: req.query.department });
+        res.status(200).json({ message: "Successfully fetched all doctors", doctors });
+    } catch (error) {
+        console.error("Error fetching doctors:", error);
+        res.status(500).json({ message: "Failed to fetch doctors" });
+    }
+}
