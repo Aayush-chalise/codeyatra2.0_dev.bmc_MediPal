@@ -1,6 +1,4 @@
-import Doctor from "../models/Doctor";
-import DoctorSchedule from "../models/DoctorSchedule";  
-import Appointment from "../models/Appointment";        
+import Doctor from "../models/Doctor.js";import Appointment from "../models/Appointment.js";        
 
 
 
@@ -134,7 +132,7 @@ const generateSlots = (workingHours, breakTime, duration, bookedAppointments) =>
     if (!isOverlapping) {
       const hours = Math.floor(slotStart / 60);
       const minutes = slotStart % 60;
-    //   we wanr 09:26 , padding with zero if needed
+    //   we wanr 09:30 , padding with zero if needed
       const timeString = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
       slots.push(timeString);
     }
