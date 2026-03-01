@@ -226,9 +226,12 @@ const LandingPageWithDoctors = () => {
 
   const handleAppointmentSubmit = async (appointmentData) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/appointments/book/`, {
+      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("medipal_token")}`,
+        },
         body: JSON.stringify(appointmentData),
       });
       if (!response.ok) throw new Error(`Backend error: ${response.status}`);

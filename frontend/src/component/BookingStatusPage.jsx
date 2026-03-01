@@ -19,16 +19,19 @@ const BookingStatusPage = () => {
   const fetchAppointmentData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `${BACKEND_URL}/api/appointments/${appointmentId}`,
-      );
+      const response = await fetch(`${BACKEND_URL}/api/appointments/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("medipal_token")}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch appointment data");
       }
 
       const data = await response.json();
-      setAppointmentData(data.appointment);
+      console.log(data);
+      setAppointmentData(data.appointments);
     } catch (err) {
       console.error("Error fetching appointment:", err);
       setError(err.message);

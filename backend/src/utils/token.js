@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config/env.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 export const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, JWT_SECRET, { expiresIn: "30M" });
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "30M" });
 };

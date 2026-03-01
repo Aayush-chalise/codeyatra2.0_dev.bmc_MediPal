@@ -10,8 +10,6 @@ import protect from "./middleware/auth.middleware.js";
 import doctorRouter from "./routes/doctor.routes.js";
 import { analyzeSymptomsgrok } from "./controllers/grok.controller.js";
 
-
-
 dotenv.config();
 
 const app = express();
@@ -33,7 +31,7 @@ app.use("/api/symptoms/analyze", analyzeSymptomsgrok);
 app.use("/api/doctors", doctorRouter);
 // app.use(protect);
 
-app.use("/api/appointments", appointmentRoutes);
+app.use("/api/appointments", protect, appointmentRoutes);
 app.use("/api/schedule", scheduleRoutes);
 
 const PORT = process.env.PORT || 3000;
