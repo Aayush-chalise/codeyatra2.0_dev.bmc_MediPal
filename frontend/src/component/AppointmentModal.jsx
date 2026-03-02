@@ -3,6 +3,7 @@ import { X, Loader, AlertCircle, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
+  console.log(doctor);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userName: "",
@@ -92,31 +93,6 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
       .toUpperCase()}`;
   };
 
-  // Send appointment data to backend
-  const sendToBackend = async (appointmentData) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/appointments/book`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // if your backend requires auth
-        },
-        body: JSON.stringify(appointmentData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Backend Response:", data);
-      return data;
-    } catch (error) {
-      console.error("Error sending to backend:", error);
-      throw error;
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -135,17 +111,10 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
       // Prepare appointment data to send to backend
       const appointmentData = {
         doctorId: doctor._id,
-        
 
         appointmentDate: `${formData.appointmentDate}`,
         appointmentTime: `${formData.appointmentTime}`,
       };
-
-      console.log("Sending to backend:", appointmentData);
-
-      // Send to backend
-      const backendResponse = await sendToBackend(appointmentData);
-      console.log("Received from backend:", backendResponse);
 
       // Call the onSubmit callback (for updating chat/UI)
       await onSubmit(appointmentData);
@@ -155,7 +124,7 @@ const AppointmentModal = ({ doctor, isOpen, onClose, onSubmit }) => {
       // Reset form after 1.5 seconds
       setTimeout(() => {
         // Navigate to booking status page with appointment ID
-        navigate(`/booking/${appointmentData.appointmentId}`, {
+        navigate(`/booking`, {
           state: { appointmentData },
         });
 
